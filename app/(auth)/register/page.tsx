@@ -8,24 +8,27 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
+import { api } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
-    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [firstName, setFirstName] = useState('');
     const { login } = useAuthStore();
     const router = useRouter();
 
     const mutation = useMutation({
         mutationFn: (data: any) =>
-            fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            }).then((res) => res.json()),
+            api.post('/auth/register/', data),
         onSuccess: (data) => {
-            login(data.user, data.token);
+            login(data.user, data.access);
+            toast.success('Регистрация успешна!');
             router.push('/dashboard');
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Ошибка регистрации');
         },
     });
 
@@ -39,13 +42,17 @@ export default function RegisterPage() {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
-                        mutation.mutate({ name, email, password });
+                        mutation.mutate({ username, email, password, first_name: firstName });
                     }}
                     className="space-y-4"
                 >
                     <div>
+                        <Label>Логин (username)</Label>
+                        <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
+                    </div>
+                    <div>
                         <Label>Имя</Label>
-                        <Input value={name} onChange={(e) => setName(e.target.value)} required />
+                        <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                     </div>
                     <div>
                         <Label>Email</Label>
@@ -55,8 +62,8 @@ export default function RegisterPage() {
                         <Label>Пароль</Label>
                         <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
-                    <Button type="submit" className="w-full">
-                        Зарегистрироваться
+                    <Button type="submit" className="w-full" disabled={mutation.isPending}>
+                        {mutation.isPending ? 'Регистрация...' : 'Зарегистрироваться'}
                     </Button>
                 </form>
 

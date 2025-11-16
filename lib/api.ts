@@ -1,30 +1,46 @@
-import { queryClient } from './queryClient';
-import { useAuthStore } from '@/store/useAuthStore';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-const getAuthHeaders = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+const getToken = () => (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
 
 export const api = {
-  get: async <T>(url: string): Promise<T> => {
-    const res = await fetch(`${API_URL}${url}`, {
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-    });
-    if (!res.ok) throw new Error('Failed to fetch');
+  async get<T>(path: string): Promise<T> {
+    const token = getToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${API_URL}${path}`, { headers });
+    if (!res.ok) throw new Error(`GET ${path}: ${res.status}`);
     return res.json();
   },
 
-  post: async <T>(url: string, data: any): Promise<T> => {
-    const res = await fetch(`${API_URL}${url}`, {
+  async post<T>(path: string, body: any): Promise<T> {
+    const token = getToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${API_URL}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify(data),
+      headers,
+      body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error('Failed to post');
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || Object.values(err)[0]?.[0] || 'Ошибка');
+    }
     return res.json();
   },
 
+  async patch<T>(path: string, body: any): Promise<T> {
+    const token = getToken();
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(`${API_URL}${path}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`PATCH ${path}: ${res.status}`);
+    return res.json();
+  },
 };

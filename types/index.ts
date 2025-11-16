@@ -1,33 +1,31 @@
 export interface User {
     id: string;
+    username: string;
     email: string;
-    name: string;
-    avatar?: string;
+    first_name: string;
 }
 
 export interface Family {
     id: string;
     name: string;
     description?: string;
-    createdAt: string;
+    owner: User;
     members: User[];
-    ownerId: string;
+    created_at: string;
 }
 
 export interface TreeNode {
     id: string;
     name: string;
-    birthDate?: string;
-    deathDate?: string;
+    birth_date?: string;
+    death_date?: string;
     bio?: string;
-    photoUrl?: string;
-    position: { x: number; y: number };
-    parentIds: string[];
+    photo_url?: string;
+    x: number;
+    y: number;
 }
 
 export interface FamilyTree {
-    id: string;
-    familyId: string;
     nodes: TreeNode[];
     edges: { source: string; target: string }[];
 }

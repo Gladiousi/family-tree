@@ -1,32 +1,51 @@
 'use client';
 
-import FamilyTree from '@/components/FamilyTree';
-import { useFamilyStore } from '@/store/useFamilyStore';
+import { Button } from '@/components/ui/button';
+import { Users } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { useParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { Family } from '@/types';
+import AddMemberModal from '@/components/AddMemberModal';
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function FamilyPage() {
-    const params = useParams();
-    const familyId = params.id as string;
-    const { setCurrentTree } = useFamilyStore();
+    const { id } = useParams();
+    const [addOpen, setAddOpen] = useState(false);
 
-    const { data: tree, isLoading } = useQuery({
-        queryKey: ['tree', familyId],
-        queryFn: () => api.get(`/families/${familyId}/tree`),
+    const { data: family } = useQuery({
+        queryKey: ['family', id],
+        queryFn: () => api.get<Family>(`/families/${id}/`),
     });
 
-    useEffect(() => {
-        if (tree) setCurrentTree(tree);
-    }, [tree, setCurrentTree]);
-
-    if (isLoading) return <div className="p-6">Загрузка...</div>;
+    if (!family) return <div>Загрузка...</div>;
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Семейное древо</h1>
-            <FamilyTree familyId={familyId} />
+        <div className="container mx-auto p-6">
+            <div className="flex justify-between items-start mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold">{family.name}</h1>
+                    <p className="text-muted-foreground">{family.description}</p>
+                </div>
+                <Button onClick={() => setAddOpen(true)}>
+                    <Users className="mr-2 h-4 w-4" /> Добавить
+                </Button>
+                <Button asChild>
+                    <Link href={`/dashboard/family/${id}/tree`}>Открыть древо</Link>
+                </Button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {family.members.map((member) => (
+                    <div key={member.id} className="border p-4 rounded-lg">
+                        <p className="font-medium">{member.first_name || member.username}</p>
+                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                    </div>
+                ))}
+            </div>
+
+            <AddMemberModal open={addOpen} onClose={() => setAddOpen(false)} familyId={id as string} />
         </div>
     );
 }
