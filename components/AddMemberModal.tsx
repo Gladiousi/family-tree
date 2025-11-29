@@ -3,11 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { User } from '@/types';
+import { sanitizeTextField, isValidId, rateLimiter } from '@/lib/security';
 
 interface AddMemberModalProps {
     open: boolean;
@@ -21,29 +22,51 @@ export default function AddMemberModal({ open, onClose, familyId }: AddMemberMod
     const [loading, setLoading] = useState(false);
     const queryClient = useQueryClient();
 
-    const searchUsers = async () => {
-        if (!search.trim()) return;
+    const searchUsers = useCallback(async () => {
+        const sanitizedSearch = sanitizeTextField(search.trim(), 100);
+        if (!sanitizedSearch) {
+            toast.error('Введите email или логин для поиска');
+            return;
+        }
+
+        if (!rateLimiter.canMakeRequest(`search-${familyId}`, 10, 60000)) {
+            toast.error('Слишком много запросов. Подождите немного.');
+            return;
+        }
+
         setLoading(true);
         try {
-            const data = await api.get<User[]>(`/users/search/?q=${encodeURIComponent(search)}`);
-            setResults(data);
-        } catch {
-            toast.error('Ошибка поиска');
+            const data = await api.get<User[]>(`/api/users/search/?q=${encodeURIComponent(sanitizedSearch)}`);
+            setResults(data || []);
+            if (data && data.length === 0) {
+                toast.info('Пользователи не найдены');
+            }
+        } catch (err: any) {
+            toast.error(err.message || 'Ошибка поиска');
+            setResults([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [search, familyId]);
 
-    const addMember = async (userId: string) => {
-        try {
-            await api.post(`/families/${familyId}/add_member/`, { user_id: userId });
-            toast.success('Участник добавлен');
-            queryClient.invalidateQueries({ queryKey: ['family', familyId] });
-            onClose();
-        } catch {
-            toast.error('Не удалось добавить');
+    const addMember = useCallback(async (userId: string) => {
+        if (!isValidId(userId)) {
+            toast.error('Неверный ID пользователя');
+            return;
         }
-    };
+
+        try {
+            await api.post(`/api/families/${familyId}/add_member/`, { user_id: userId });
+            toast.success('Участник добавлен');
+            queryClient.invalidateQueries({ queryKey: ['families'] });
+            queryClient.invalidateQueries({ queryKey: ['family', familyId] });
+            setSearch('');
+            setResults([]);
+            onClose();
+        } catch (err: any) {
+            toast.error(err.message || 'Не удалось добавить участника');
+        }
+    }, [familyId, queryClient, onClose]);
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
@@ -57,9 +80,17 @@ export default function AddMemberModal({ open, onClose, familyId }: AddMemberMod
                             placeholder="Email или логин"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && searchUsers()}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !loading) {
+                                    e.preventDefault();
+                                    searchUsers();
+                                }
+                            }}
+                            maxLength={100}
+                            disabled={loading}
+                            aria-label="Поиск пользователя"
                         />
-                        <Button onClick={searchUsers} disabled={loading}>
+                        <Button onClick={searchUsers} disabled={loading || !search.trim()}>
                             {loading ? 'Поиск...' : 'Найти'}
                         </Button>
                     </div>

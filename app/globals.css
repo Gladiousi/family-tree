@@ -122,3 +122,69 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes modal-overlay-in {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(4px);
+    }
+  }
+
+  @keyframes modal-overlay-out {
+    from {
+      opacity: 1;
+      backdrop-filter: blur(4px);
+    }
+    to {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+  }
+
+  @keyframes modal-content-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -48%) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes modal-content-out {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -48%) scale(0.96);
+    }
+  }
+
+  .modal-overlay[data-state="open"] {
+    animation: modal-overlay-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .modal-overlay[data-state="closed"] {
+    animation: modal-overlay-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .modal-content {
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .modal-content[data-state="open"] {
+    animation: modal-content-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .modal-content[data-state="closed"] {
+    animation: modal-content-out 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}

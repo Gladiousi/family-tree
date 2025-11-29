@@ -10,6 +10,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { sanitizeTextField, isValidUsername, rateLimiter } from '@/lib/security';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -18,21 +19,52 @@ export default function LoginPage() {
     const router = useRouter();
 
     const mutation = useMutation({
-        mutationFn: (data: any) =>
-            api.post('/auth/login/', data),
-        onSuccess: (data) => {
+        mutationFn: async (data: { username: string; password: string }) => {
+            if (!rateLimiter.canMakeRequest('login', 5, 300000)) {
+                throw new Error('Слишком много попыток входа. Попробуйте через 5 минут.');
+            }
+
+            const sanitizedUsername = sanitizeTextField(data.username.trim(), 50);
+            if (!sanitizedUsername || !isValidUsername(sanitizedUsername)) {
+                throw new Error('Неверный формат логина');
+            }
+
+            const response = await api.post<{ access: string; refresh: string }>('/api/auth/login/', {
+                username: sanitizedUsername,
+                password: data.password,
+            });
+            
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('token', response.access);
+            }
+            
+            try {
+                const user = await api.get('/api/auth/me/');
+                return { ...response, user };
+            } catch (error) {
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('token');
+                }
+                throw error;
+            }
+        },
+        onSuccess: (data: any) => {
             login(data.user, data.access);
-            toast.success('Вход выполнен');
+            rateLimiter.reset('login');
+            toast.success('Вход выполнен успешно');
             router.push('/dashboard');
         },
-        onError: () => {
-            toast.error('Неверный логин или пароль');
+        onError: (err: any) => {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('token');
+            }
+            toast.error(err.message || 'Неверный логин или пароль');
         },
     });
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="w-full max-w-md space-y-6 rounded-lg border bg-white p-8 shadow-sm">
+        <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="w-full max-w-md space-y-6 rounded-lg border bg-white p-8 shadow-xl">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold">Вход</h1>
                 </div>

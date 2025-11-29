@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface NodeData {
@@ -26,14 +26,46 @@ interface NodeEditorProps {
 }
 
 export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorProps) {
-    const [data, setData] = useState<NodeData>({
-        name: node?.data?.name || '',
+    const getInitialData = () => ({
+        name: node?.data?.label || node?.data?.name || '',
         birthDate: node?.data?.birthDate || '',
         deathDate: node?.data?.deathDate || '',
         bio: node?.data?.bio || '',
         photoUrl: node?.data?.photoUrl || '',
     });
+
+    const [data, setData] = useState<NodeData>(getInitialData());
     const [photoPreview, setPhotoPreview] = useState<string | null>(data.photoUrl || null);
+
+    useEffect(() => {
+        if (!open) return;
+        
+        const timer = setTimeout(() => {
+            if (node) {
+                const newNodeData = {
+                    name: node.data?.label || node.data?.name || '',
+                    birthDate: node.data?.birthDate || '',
+                    deathDate: node.data?.deathDate || '',
+                    bio: node.data?.bio || '',
+                    photoUrl: node.data?.photoUrl || '',
+                };
+                setData(newNodeData);
+                setPhotoPreview(node.data?.photoUrl || null);
+            } else {
+                const emptyData = {
+                    name: '',
+                    birthDate: '',
+                    deathDate: '',
+                    bio: '',
+                    photoUrl: '',
+                };
+                setData(emptyData);
+                setPhotoPreview(null);
+            }
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, [node, open]);
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -48,9 +80,15 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
     };
 
     const handleSave = () => {
+        if (!data.name.trim()) {
+            toast.error('Имя обязательно');
+            return;
+        }
+        if (!data.birthDate) {
+            toast.error('Дата рождения обязательна');
+            return;
+        }
         onSave(data);
-        toast.success(node ? 'Узел обновлён' : 'Человек добавлен');
-        onClose();
     };
 
     return (
