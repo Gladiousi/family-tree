@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Calendar, Users, Edit, Heart, ArrowLeft, User } from 'lucide-react';
+import { Plus, Calendar, Users, Edit, Heart, ArrowLeft, User, Image, X } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -29,6 +29,8 @@ export default function MemoriesPage() {
     const [description, setDescription] = useState('');
     const [date, setDate] = useState('');
     const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+    const [uploadingMedia, setUploadingMedia] = useState(false);
+    const [createdMemoryId, setCreatedMemoryId] = useState<string | null>(null);
 
     const { data: memories = [] } = useQuery({
         queryKey: ['memories', id],
@@ -49,10 +51,10 @@ export default function MemoriesPage() {
             family: id,
             node_ids: selectedNodeIds
         }),
-        onSuccess: () => {
+        onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ['memories', id] });
             toast.success('Воспоминание создано');
-            setOpen(false);
+            setCreatedMemoryId(data.id);
             setTitle('');
             setDescription('');
             setDate('');
@@ -62,6 +64,47 @@ export default function MemoriesPage() {
             toast.error(err.message || 'Ошибка создания воспоминания');
         },
     });
+
+    const uploadMedia = useMutation({
+        mutationFn: ({ file, type, memoryId }: { file: File; type: 'photo' | 'video'; memoryId: string }) =>
+            api.uploadFile(`/api/memories/${memoryId}/upload_media/`, file, type),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['memories', id] });
+            toast.success('Медиа загружено');
+            setUploadingMedia(false);
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Ошибка загрузки медиа');
+            setUploadingMedia(false);
+        },
+    });
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!createdMemoryId) {
+            toast.error('Сначала создайте воспоминание');
+            return;
+        }
+
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        if (!isImage && !isVideo) {
+            toast.error('Поддерживаются только изображения и видео');
+            return;
+        }
+
+        setUploadingMedia(true);
+        uploadMedia.mutate({
+            file,
+            type: isImage ? 'photo' : 'video',
+            memoryId: createdMemoryId,
+        });
+
+        e.target.value = '';
+    };
 
     const deleteMemory = useMutation({
         mutationFn: (memoryId: string) => api.delete(`/api/memories/${memoryId}/`),
@@ -171,7 +214,12 @@ export default function MemoriesPage() {
                 </div>
             )}
 
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(isOpen) => {
+                setOpen(isOpen);
+                if (!isOpen) {
+                    setCreatedMemoryId(null);
+                }
+            }}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Новое воспоминание</DialogTitle>
@@ -217,8 +265,33 @@ export default function MemoriesPage() {
                                 </div>
                             </div>
                         )}
-                        <Button onClick={() => createMemory.mutate()} className="w-full">
-                            Создать
+                        <div>
+                            <Label className="flex items-center gap-2 mb-2">
+                                <Image className="h-4 w-4" />
+                                Медиафайлы
+                            </Label>
+                            <Input
+                                type="file"
+                                accept="image/*,video/*"
+                                onChange={handleFileUpload}
+                                disabled={!createdMemoryId || uploadingMedia}
+                                className="mt-2"
+                            />
+                            {uploadingMedia && (
+                                <p className="text-sm text-muted-foreground mt-1">Загрузка...</p>
+                            )}
+                            {createdMemoryId && (
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Медиафайлы можно добавить после создания воспоминания
+                                </p>
+                            )}
+                        </div>
+                        <Button 
+                            onClick={() => createMemory.mutate()} 
+                            className="w-full"
+                            disabled={createMemory.isPending}
+                        >
+                            {createMemory.isPending ? 'Создание...' : 'Создать'}
                         </Button>
                     </div>
                 </DialogContent>

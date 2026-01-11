@@ -12,18 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, Users } from 'lucide-react';
-
-interface EditMemoryModalProps {
-    open: boolean;
-    onClose: () => void;
-    memoryId: string;
-    familyId: string;
-}
+import { User, Users, X, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
+import type { Memory, TreeNode, Family, EditMemoryModalProps } from '@/types';
 
 export default function EditMemoryModal({
     open,
@@ -31,40 +26,59 @@ export default function EditMemoryModal({
     memoryId,
     familyId,
 }: EditMemoryModalProps) {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [date, setDate] = useState('');
-    const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
-    const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
     const queryClient = useQueryClient();
 
-    const { data: memory } = useQuery({
+    const { data: memory } = useQuery<Memory>({
         queryKey: ['memory', memoryId],
-        queryFn: () => api.get<any>(`/api/memories/${memoryId}/`),
+        queryFn: () => api.get<Memory>(`/api/memories/${memoryId}/`),
         enabled: open && !!memoryId,
     });
 
-    const { data: nodes = [] } = useQuery({
+    const { data: nodes = [] } = useQuery<TreeNode[]>({
         queryKey: ['nodes', familyId],
-        queryFn: () => api.get(`/api/nodes/?family=${familyId}`),
+        queryFn: () => api.get<TreeNode[]>(`/api/nodes/?family=${familyId}`),
         enabled: open,
     });
 
-    const { data: family } = useQuery({
+    const { data: family } = useQuery<Family>({
         queryKey: ['family', familyId],
-        queryFn: () => api.get(`/api/families/${familyId}/`),
+        queryFn: () => api.get<Family>(`/api/families/${familyId}/`),
         enabled: open,
     });
+
+    const initialTitle = memory?.title || '';
+    const initialDescription = memory?.description || '';
+    const initialDate = memory?.date ? memory.date.split('T')[0] : '';
+    const initialNodeIds = memory?.nodes?.map((n) => n.id) || [];
+    const initialParticipantIds = memory?.participants?.map((p) => p.id) || [];
+
+    const [title, setTitle] = useState(initialTitle);
+    const [description, setDescription] = useState(initialDescription);
+    const [date, setDate] = useState(initialDate);
+    const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(initialNodeIds);
+    const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>(initialParticipantIds);
+    const [uploadingMedia, setUploadingMedia] = useState(false);
+    
+    const previousMemoryIdRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (memory) {
-            setTitle(memory.title || '');
-            setDescription(memory.description || '');
-            setDate(memory.date ? memory.date.split('T')[0] : '');
-            setSelectedNodeIds(memory.nodes?.map((n: any) => n.id) || []);
-            setSelectedParticipantIds(memory.participants?.map((p: any) => p.id) || []);
+        if (!open || !memory) {
+            previousMemoryIdRef.current = null;
+            return;
         }
-    }, [memory]);
+
+        if (memory.id !== previousMemoryIdRef.current) {
+            previousMemoryIdRef.current = memory.id;
+            const timer = setTimeout(() => {
+                setTitle(memory.title || '');
+                setDescription(memory.description || '');
+                setDate(memory.date ? memory.date.split('T')[0] : '');
+                setSelectedNodeIds(memory.nodes?.map((n) => n.id) || []);
+                setSelectedParticipantIds(memory.participants?.map((p) => p.id) || []);
+            }, 0);
+            return () => clearTimeout(timer);
+        }
+    }, [memory, open]);
 
     const updateMemory = useMutation({
         mutationFn: (data: {
@@ -84,6 +98,55 @@ export default function EditMemoryModal({
             toast.error(err.message || 'Ошибка обновления воспоминания');
         },
     });
+
+    const uploadMedia = useMutation({
+        mutationFn: ({ file, type }: { file: File; type: 'photo' | 'video' }) =>
+            api.uploadFile(`/api/memories/${memoryId}/upload_media/`, file, type),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['memory', memoryId] });
+            queryClient.invalidateQueries({ queryKey: ['memories', familyId] });
+            toast.success('Медиа загружено');
+            setUploadingMedia(false);
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Ошибка загрузки медиа');
+            setUploadingMedia(false);
+        },
+    });
+
+    const deleteMedia = useMutation({
+        mutationFn: (mediaId: string) =>
+            api.delete(`/api/memories/${memoryId}/delete_media/`, { media_id: mediaId }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['memory', memoryId] });
+            queryClient.invalidateQueries({ queryKey: ['memories', familyId] });
+            toast.success('Медиа удалено');
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Ошибка удаления медиа');
+        },
+    });
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        if (!isImage && !isVideo) {
+            toast.error('Поддерживаются только изображения и видео');
+            return;
+        }
+
+        setUploadingMedia(true);
+        uploadMedia.mutate({
+            file,
+            type: isImage ? 'photo' : 'video',
+        });
+
+        e.target.value = '';
+    };
 
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
@@ -153,7 +216,7 @@ export default function EditMemoryModal({
                                 Люди из дерева
                             </Label>
                             <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                                {nodes.map((node: any) => (
+                                {nodes.map((node) => (
                                     <div key={node.id} className="flex items-center space-x-2">
                                         <Checkbox
                                             id={`edit-node-${node.id}`}
@@ -187,7 +250,7 @@ export default function EditMemoryModal({
                                 Участники
                             </Label>
                             <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                                {family.members.map((member: any) => (
+                                {family.members.map((member) => (
                                     <div key={member.id} className="flex items-center space-x-2">
                                         <Checkbox
                                             id={`edit-participant-${member.id}`}
@@ -219,6 +282,60 @@ export default function EditMemoryModal({
                         </div>
                     )}
 
+                    <div>
+                        <Label className="flex items-center gap-2 mb-2">
+                            <ImageIcon className="h-4 w-4" />
+                            Медиафайлы
+                        </Label>
+                        <div className="mt-2 space-y-3">
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    type="file"
+                                    accept="image/*,video/*"
+                                    onChange={handleFileUpload}
+                                    disabled={uploadingMedia}
+                                    className="flex-1"
+                                />
+                                {uploadingMedia && (
+                                    <span className="text-sm text-muted-foreground">Загрузка...</span>
+                                )}
+                            </div>
+                            {memory?.media && memory.media.length > 0 && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    {memory.media.map((m) => (
+                                        <div key={m.id} className="relative group aspect-video bg-gray-200 rounded-lg overflow-hidden">
+                                            {m.type === 'video' ? (
+                                                <video controls className="w-full h-full object-cover">
+                                                    <source src={m.url} />
+                                                </video>
+                                            ) : (
+                                                <div className="relative w-full h-full">
+                                                    <Image 
+                                                        src={m.url} 
+                                                        alt="Медиафайл воспоминания" 
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            )}
+                                            <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="icon"
+                                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
+                                                onClick={() => deleteMedia.mutate(m.id)}
+                                                disabled={deleteMedia.isPending}
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={onClose}>
                             Отмена
@@ -232,4 +349,6 @@ export default function EditMemoryModal({
         </Dialog>
     );
 }
+
+
 

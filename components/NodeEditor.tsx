@@ -7,23 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-
-interface NodeData {
-    id?: string;
-    name: string;
-    birthDate?: string;
-    deathDate?: string;
-    bio?: string;
-    photo?: File | null;
-    photoUrl?: string;
-}
-
-interface NodeEditorProps {
-    open: boolean;
-    onClose: () => void;
-    node?: any;
-    onSave: (data: NodeData) => void;
-}
+import type { NodeEditorProps, NodeData } from '@/types';
 
 export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorProps) {
     const getInitialData = () => ({
@@ -38,10 +22,20 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
     const [photoPreview, setPhotoPreview] = useState<string | null>(data.photoUrl || null);
 
     useEffect(() => {
-        if (!open) return;
+        if (!open) {
+            setData({
+                name: '',
+                birthDate: '',
+                deathDate: '',
+                bio: '',
+                photoUrl: '',
+            });
+            setPhotoPreview(null);
+            return;
+        }
         
-        const timer = setTimeout(() => {
-            if (node) {
+        if (node) {
+            requestAnimationFrame(() => {
                 const newNodeData = {
                     name: node.data?.label || node.data?.name || '',
                     birthDate: node.data?.birthDate || '',
@@ -51,7 +45,9 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
                 };
                 setData(newNodeData);
                 setPhotoPreview(node.data?.photoUrl || null);
-            } else {
+            });
+        } else {
+            requestAnimationFrame(() => {
                 const emptyData = {
                     name: '',
                     birthDate: '',
@@ -61,10 +57,8 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
                 };
                 setData(emptyData);
                 setPhotoPreview(null);
-            }
-        }, 0);
-
-        return () => clearTimeout(timer);
+            });
+        }
     }, [node, open]);
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

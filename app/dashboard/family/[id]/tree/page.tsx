@@ -37,28 +37,11 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+import type { TreeNodeData, TreeEdgeData, TreeNode } from '@/types';
+
 const nodeTypes = {
     custom: CustomNode,
 };
-
-interface TreeNodeData {
-    id: string;
-    name: string;
-    birth_date?: string;
-    death_date?: string;
-    bio?: string;
-    photo_url?: string;
-    x: number;
-    y: number;
-}
-
-interface TreeEdgeData {
-    id: string;
-    source: string;
-    target: string;
-    source_id?: string;
-    target_id?: string;
-}
 
 export default function FamilyTreePage() {
     const { id } = useParams();
@@ -74,7 +57,7 @@ export default function FamilyTreePage() {
 
     const { data: treeNodes = [], isLoading: nodesLoading } = useQuery({
         queryKey: ['nodes', id],
-        queryFn: () => api.get<TreeNodeData[]>(`/api/nodes/?family=${id}`),
+        queryFn: () => api.get<TreeNode[]>(`/api/nodes/?family=${id}`),
     });
 
     const { data: treeEdges = [], isLoading: edgesLoading } = useQuery({
@@ -94,6 +77,9 @@ export default function FamilyTreePage() {
                     deathDate: n.death_date,
                     bio: n.bio,
                     photoUrl: n.photo_url,
+                    bio_html: n.bio_html,
+                    age_display: n.age_display,
+                    media: n.media,
                 },
                 position: { x: n.x || 250, y: n.y || 100 },
             }));

@@ -2,11 +2,7 @@ import { Card } from '@/components/ui/card';
 import { useFamilyStore } from '@/store/useFamilyStore';
 import { useRouter } from 'next/navigation';
 import { Users } from 'lucide-react';
-import { Family } from '@/types';
-
-interface FamilyCardProps {
-    family: Family;
-}
+import type { Family, FamilyCardProps } from '@/types';
 
 export default function FamilyCard({ family }: FamilyCardProps) {
     const { setCurrentFamily } = useFamilyStore();

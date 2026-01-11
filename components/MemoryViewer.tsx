@@ -6,15 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { format } from 'date-fns';
 import { Edit, Trash2, Calendar, Users, User } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-
-interface MemoryViewerProps {
-    open: boolean;
-    onClose: () => void;
-    memory: any;
-    onEdit: () => void;
-    onDelete: () => void;
-    isDeleting?: boolean;
-}
+import Image from 'next/image';
+import type { MemoryViewerProps, MediaFile } from '@/types';
 
 export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, isDeleting = false }: MemoryViewerProps) {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -53,7 +46,14 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                         {memory.description && (
                             <div className="pt-4 border-t">
                                 <h3 className="font-semibold mb-2">Описание</h3>
-                                <p className="text-muted-foreground whitespace-pre-wrap">{memory.description}</p>
+                                {memory.description_html ? (
+                                    <div 
+                                        className="text-muted-foreground prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: memory.description_html }}
+                                    />
+                                ) : (
+                                    <p className="text-muted-foreground whitespace-pre-wrap">{memory.description}</p>
+                                )}
                             </div>
                         )}
 
@@ -61,14 +61,40 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                             <div className="pt-4 border-t">
                                 <h3 className="font-semibold mb-3">Медиа</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {memory.media.map((m: any) => (
-                                        <div key={m.id} className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
+                                    {memory.media.map((m: MediaFile, index: number) => (
+                                        <div 
+                                            key={m.id} 
+                                            className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer group"
+                                            onClick={() => {
+                                                const link = document.createElement('a');
+                                                if (m.type === 'photo') {
+                                                    link.href = m.url;
+                                                    link.download = `memory-${m.id}.jpg`;
+                                                    link.click();
+                                                } else {
+                                                    window.open(m.url, '_blank');
+                                                }
+                                            }}
+                                        >
                                             {m.type === 'video' ? (
                                                 <video controls className="w-full h-full object-cover">
                                                     <source src={m.url} />
                                                 </video>
                                             ) : (
-                                                <img src={m.url} alt="" className="w-full h-full object-cover" />
+                                                <div className="relative w-full h-full">
+                                                    <Image 
+                                                        src={m.url} 
+                                                        alt="Медиафайл воспоминания" 
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium transition-opacity">
+                                                            Кликните для скачивания
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
                                     ))}

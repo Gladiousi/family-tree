@@ -1,22 +1,16 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
+import type { AuthUser } from '@/types';
 
-interface User {
-    id: string;
-    username: string;
-    email: string;
-    first_name: string;
-}
-
-interface AuthState {
-    user: User | null;
+type AuthContextState = {
+    user: AuthUser | null;
     token: string | null;
-    login: (user: User, token: string) => void;
+    login: (user: AuthUser, token: string) => void;
     logout: () => void;
     restoreSession: () => Promise<void>;
-}
+};
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthContextState>((set) => ({
     user: null,
     token: null,
 

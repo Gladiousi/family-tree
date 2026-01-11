@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils"
 
-interface LoadingSpinnerProps {
-    className?: string;
-    size?: 'sm' | 'md' | 'lg';
-    text?: string;
-}
+import type { LoadingSpinnerProps, LoadingPageProps } from '@/types';
 
-export function LoadingSpinner({ className, size = 'md', text }: LoadingSpinnerProps) {
+type LoadingSpinnerPropsWithClassName = LoadingSpinnerProps & {
+    className?: string;
+};
+
+export function LoadingSpinner({ className, size = 'md', text }: LoadingSpinnerPropsWithClassName) {
     const sizeClasses = {
         sm: 'h-4 w-4',
         md: 'h-8 w-8',
@@ -30,10 +30,6 @@ export function LoadingSpinner({ className, size = 'md', text }: LoadingSpinnerP
     );
 }
 
-interface LoadingPageProps {
-    text?: string;
-}
-
 export function LoadingPage({ text = "Загрузка..." }: LoadingPageProps) {
     return (
         <div className="container mx-auto p-4 md:p-6">
@@ -43,4 +39,5 @@ export function LoadingPage({ text = "Загрузка..." }: LoadingPageProps) 
         </div>
     );
 }
+
 

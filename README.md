@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Family Tree Frontend
 
-## Getting Started
+Веб-приложение для визуализации семейного древа с прикреплением мультимедиа и историй.
 
-First, run the development server:
+## Технологический стек
+
+- **Next.js 16** (App Router)
+- **React 18**
+- **TypeScript**
+- **Tailwind CSS**
+- **TanStack Query** (React Query) - управление состоянием сервера
+- **Zustand** - управление локальным состоянием
+- **React Flow** - визуализация дерева
+- **Radix UI** - компоненты интерфейса
+- **Sonner** - уведомления
+- **date-fns** - работа с датами
+- **Lucide React** - иконки
+
+## Основные возможности
+
+### Безопасность
+- Санитизация всех пользовательских вводов
+- Валидация email, username, password
+- Rate limiting для API запросов
+- Безопасное хранение JWT токенов
+- Защита от XSS через экранирование
+
+### Функциональность
+- Регистрация и авторизация пользователей
+- Профиль пользователя с датой рождения, датой смерти и расчетом возраста
+- Создание и управление семьями
+- Визуализация генеалогического дерева с отображением возраста
+- Добавление и редактирование узлов (людей) с датами и возрастом
+- Создание связей между узлами
+- Создание воспоминаний с медиафайлами
+- Загрузка фото и видео для узлов и воспоминаний
+- Поддержка Markdown в описаниях
+- Поиск пользователей для приглашения в семьи
+
+### Компоненты
+
+#### Страницы
+- `/` - главная страница
+- `/login` - вход
+- `/register` - регистрация
+- `/dashboard` - дашборд с семьями
+- `/dashboard/family/[id]` - страница семьи
+- `/dashboard/family/[id]/tree` - визуализация дерева
+- `/dashboard/family/[id]/memories` - воспоминания
+- `/dashboard/profile` - профиль пользователя
+
+#### Компоненты
+- `MemoryViewer` - просмотр воспоминания с markdown
+- `EditMemoryModal` - редактирование воспоминания с загрузкой медиа
+- `NodeViewer` - просмотр узла с медиа и отображением возраста
+- `NodeEditor` - редактирование узла
+- `FamilyCard` - карточка семьи
+- `CustomNode` - кастомный узел для дерева с отображением дат и возраста
+
+## Установка и запуск
+
+### Требования
+- Node.js 18+
+- npm или yarn
+
+### Установка зависимостей
+
+```bash
+npm install
+```
+
+### Настройка
+
+Создайте файл `.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### Запуск
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Сборка для продакшена
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Структура проекта
 
-To learn more about Next.js, take a look at the following resources:
+```
+diplom/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Группа маршрутов авторизации
+│   ├── dashboard/         # Дашборд
+│   └── page.tsx           # Главная страница
+├── components/            # React компоненты
+│   ├── ui/               # UI компоненты (Radix UI)
+│   └── ...               # Бизнес-логика компоненты
+├── lib/                   # Утилиты и хелперы
+│   ├── api.ts            # API клиент
+│   ├── security.ts       # Функции безопасности
+│   └── authContext.tsx   # Контекст авторизации
+├── store/                 # Zustand stores
+├── types/                 # TypeScript типы
+└── public/               # Статические файлы
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API интеграция
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Все запросы к API выполняются через `lib/api.ts`:
+- Автоматическая обработка ошибок
+- Добавление JWT токена к запросам
+- Таймауты запросов
+- Обработка 401 (редирект на логин)
 
-## Deploy on Vercel
+## Безопасность на клиенте
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Санитизация всех пользовательских вводов через `sanitizeTextField`
+- Валидация email, username, password
+- Rate limiting для предотвращения спама
+- Безопасное отображение HTML (только через `description_html` с бэкенда)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Медиафайлы
+
+- Поддержка загрузки изображений (JPEG, PNG, GIF, WebP)
+- Поддержка загрузки видео (MP4, WebM, OGG, MOV)
+- Валидация типов файлов на клиенте
+- Предпросмотр перед загрузкой
+- Удаление медиафайлов
+
+## Markdown
+
+Описания поддерживают Markdown синтаксис:
+- Заголовки
+- Списки
+- Выделение текста
+- Ссылки
+- И другие стандартные элементы Markdown
+
+HTML рендерится безопасно на бэкенде и отображается через `dangerouslySetInnerHTML` (безопасно, так как HTML уже санитизирован на бэкенде).

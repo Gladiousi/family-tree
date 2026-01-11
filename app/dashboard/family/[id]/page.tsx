@@ -3,19 +3,22 @@
 import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/ui/icon-button';
 import { Card } from '@/components/ui/card';
-import { Users, Edit, TreePine, Heart, ArrowLeft, Trash2, X } from 'lucide-react';
+import { Users, Edit, TreePine, Heart, ArrowLeft, Trash2, X, Image as ImageIcon, Upload, Play } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Family } from '@/types';
+import { Family, MediaFile } from '@/types';
 import AddMemberModal from '@/components/AddMemberModal';
 import EditFamilyModal from '@/components/EditFamilyModal';
+import MediaViewer from '@/components/MediaViewer';
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LoadingSpinner } from '@/components/ui/loading';
+import Image from 'next/image';
+import { Input } from '@/components/ui/input';
 
 export default function FamilyPage() {
     const { id } = useParams();
@@ -26,6 +29,9 @@ export default function FamilyPage() {
     const [editOpen, setEditOpen] = useState(false);
     const [deleteMemberId, setDeleteMemberId] = useState<string | null>(null);
     const [deleteFamilyOpen, setDeleteFamilyOpen] = useState(false);
+    const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
+    const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+    const [uploadingMedia, setUploadingMedia] = useState(false);
 
     const { data: family, isLoading } = useQuery({
         queryKey: ['family', id],
@@ -59,6 +65,65 @@ export default function FamilyPage() {
 
     const isOwner = useMemo(() => currentUser?.id === family?.owner.id, [currentUser?.id, family?.owner.id]);
 
+    const uploadMedia = useMutation({
+        mutationFn: async ({ file, type }: { file: File; type: 'photo' | 'video' }) => {
+            try {
+                return await api.uploadFile(`/api/families/${id}/upload_media/`, file, type);
+            } catch (error: any) {
+                console.error('Upload error:', error);
+                throw error;
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['family', id] });
+            toast.success('Медиа загружено');
+            setUploadingMedia(false);
+        },
+        onError: (err: any) => {
+            console.error('Upload mutation error:', err);
+            toast.error(err.message || 'Ошибка загрузки медиа');
+            setUploadingMedia(false);
+        },
+    });
+
+    const deleteMedia = useMutation({
+        mutationFn: (mediaId: string) =>
+            api.delete(`/api/families/${id}/delete_media/`, { media_id: mediaId }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['family', id] });
+            toast.success('Медиа удалено');
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Ошибка удаления медиа');
+        },
+    });
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        if (!isImage && !isVideo) {
+            toast.error('Поддерживаются только изображения и видео');
+            return;
+        }
+
+        setUploadingMedia(true);
+        uploadMedia.mutate({
+            file,
+            type: isImage ? 'photo' : 'video',
+        });
+
+        e.target.value = '';
+    };
+
+    const handleMediaClick = (index: number) => {
+        setSelectedMediaIndex(index);
+        setMediaViewerOpen(true);
+    };
+
     if (isLoading) {
         return (
             <div className="container mx-auto p-4 md:p-6">
@@ -80,9 +145,22 @@ export default function FamilyPage() {
                     </Button>
                 </Link>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
-                    <div className="min-w-0 flex-1">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 truncate">{family.name}</h1>
-                        <p className="text-muted-foreground text-base sm:text-lg line-clamp-2">{family.description || 'Нет описания'}</p>
+                    <div className="min-w-0 flex-1 flex items-start gap-4">
+                        {family.photo_url && (
+                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                                <Image 
+                                    src={family.photo_url} 
+                                    alt={family.name} 
+                                    fill
+                                    className="object-cover"
+                                    unoptimized
+                                />
+                            </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 truncate">{family.name}</h1>
+                            <p className="text-muted-foreground text-base sm:text-lg line-clamp-2">{family.description || 'Нет описания'}</p>
+                        </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <Button onClick={() => setAddOpen(true)} size="sm" className="flex-1 sm:flex-none">
@@ -130,6 +208,111 @@ export default function FamilyPage() {
                     </Link>
                 </div>
             </div>
+
+            {family.media && family.media.length > 0 && (
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold flex items-center gap-2">
+                            <ImageIcon className="h-6 w-6" />
+                            Медиафайлы семьи ({family.media.length})
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="file"
+                                accept="image/*,video/*"
+                                onChange={handleFileUpload}
+                                disabled={uploadingMedia}
+                                className="hidden"
+                                id="family-media-upload"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => document.getElementById('family-media-upload')?.click()}
+                                disabled={uploadingMedia}
+                            >
+                                <Upload className="h-4 w-4 mr-2" />
+                                {uploadingMedia ? 'Загрузка...' : 'Загрузить'}
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {family.media.map((m: MediaFile, index: number) => (
+                            <div 
+                                key={m.id} 
+                                className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden group cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                                onClick={() => handleMediaClick(index)}
+                            >
+                                {m.type === 'video' ? (
+                                    <>
+                                        <div className="relative w-full h-full">
+                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                                <Play className="h-8 w-8 text-white" />
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <Image 
+                                        src={m.url} 
+                                        alt="Медиафайл семьи" 
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
+                                    />
+                                )}
+                                {isOwner && (
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteMedia.mutate(m.id);
+                                        }}
+                                        disabled={deleteMedia.isPending}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {(!family.media || family.media.length === 0) && (
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold flex items-center gap-2">
+                            <ImageIcon className="h-6 w-6" />
+                            Медиафайлы семьи
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                type="file"
+                                accept="image/*,video/*"
+                                onChange={handleFileUpload}
+                                disabled={uploadingMedia}
+                                className="hidden"
+                                id="family-media-upload"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => document.getElementById('family-media-upload')?.click()}
+                                disabled={uploadingMedia}
+                            >
+                                <Upload className="h-4 w-4 mr-2" />
+                                {uploadingMedia ? 'Загрузка...' : 'Загрузить'}
+                            </Button>
+                        </div>
+                    </div>
+                    <Card className="p-8 text-center">
+                        <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-muted-foreground">Нет медиафайлов</p>
+                    </Card>
+                </div>
+            )}
 
             <div className="mb-4">
                 <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -188,6 +371,15 @@ export default function FamilyPage() {
                 familyId={id as string}
                 family={family}
             />
+
+            {family.media && family.media.length > 0 && (
+                <MediaViewer
+                    open={mediaViewerOpen}
+                    onClose={() => setMediaViewerOpen(false)}
+                    media={family.media}
+                    initialIndex={selectedMediaIndex}
+                />
+            )}
 
             <AlertDialog open={deleteMemberId !== null} onOpenChange={(open) => !open && setDeleteMemberId(null)}>
                 <AlertDialogContent>

@@ -1,14 +1,14 @@
 import { create } from 'zustand';
-import { Family } from '@/types';
+import type { Family } from '@/types';
 
-interface FamilyState {
+type FamilyStoreState = {
   families: Family[];
   currentFamily: Family | null;
   setFamilies: (families: Family[]) => void;
   setCurrentFamily: (family: Family | null) => void;
-}
+};
 
-export const useFamilyStore = create<FamilyState>((set) => ({
+export const useFamilyStore = create<FamilyStoreState>((set) => ({
   families: [],
   currentFamily: null,
   setFamilies: (families) => set({ families }),

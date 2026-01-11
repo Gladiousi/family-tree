@@ -13,15 +13,7 @@ import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
-
-interface Memory {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    participants: any[];
-    nodes: any[];
-}
+import type { Memory } from '@/types';
 
 export default function EditMemoryPage() {
     const { id, memoryId } = useParams();

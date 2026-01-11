@@ -1,24 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from '@/lib/api';
+import type { AuthUser, AuthState } from '@/types';
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  first_name: string;
-}
-
-interface AuthState {
-  user: User | null;
+type AuthStoreState = {
+  user: AuthUser | null;
   token: string | null;
-  login: (user: User, token: string) => void;
+  login: (user: AuthUser, token: string) => void;
   logout: () => void;
   restoreSession: () => Promise<void>;
   isRestoring: boolean;
-}
+};
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set, get) => ({
       user: null,

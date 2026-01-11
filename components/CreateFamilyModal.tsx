@@ -10,11 +10,7 @@ import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { sanitizeTextField, rateLimiter } from '@/lib/security';
-
-interface CreateFamilyModalProps {
-    open: boolean;
-    onClose: () => void;
-}
+import type { CreateFamilyModalProps } from '@/types';
 
 export default function CreateFamilyModal({ open, onClose }: CreateFamilyModalProps) {
     const [name, setName] = useState('');

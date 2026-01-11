@@ -6,12 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-interface InviteModalProps {
-    open: boolean;
-    onClose: () => void;
-    familyId: string;
-}
+import type { InviteModalProps } from '@/types';
 
 export default function InviteModal({ open, onClose, familyId }: InviteModalProps) {
     const [email, setEmail] = useState('');

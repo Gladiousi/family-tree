@@ -179,4 +179,42 @@ export const api = {
             throw handleApiError(error, path, 'DELETE');
         }
     },
+
+    async uploadFile<T>(path: string, file: File, fileType: 'photo' | 'video'): Promise<T> {
+        const token = getToken();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', fileType);
+
+        const headers: HeadersInit = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        try {
+            const res = await fetchWithTimeout(`${API_URL}${path}`, {
+                method: 'POST',
+                headers,
+                body: formData,
+            });
+            
+            if (res.status === 401) {
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }
+                throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+            }
+            
+            if (!res.ok) {
+                const error = await safeJsonParse<any>(res).catch(() => ({ 
+                    detail: `UPLOAD ${path}: ${res.status}` 
+                }));
+                const errorMessage = error.detail || error.message || `Ошибка загрузки файла: ${res.status}`;
+                throw new Error(String(errorMessage));
+            }
+            
+            return await safeJsonParse<T>(res);
+        } catch (error: any) {
+            throw handleApiError(error, path, 'UPLOAD');
+        }
+    },
 };
