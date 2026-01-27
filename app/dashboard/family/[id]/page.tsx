@@ -7,7 +7,7 @@ import { Users, Edit, TreePine, Heart, ArrowLeft, Trash2, X, Image as ImageIcon,
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Family, MediaFile } from '@/types';
+import { Family, MediaFile } from '@/types/models';
 import AddMemberModal from '@/components/AddMemberModal';
 import EditFamilyModal from '@/components/EditFamilyModal';
 import MediaViewer from '@/components/MediaViewer';
@@ -322,7 +322,7 @@ export default function FamilyPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {family.members.map((member) => {
+                {family.members.map((member: any) => {
                     const isMemberOwner = member.id === family.owner.id;
                     const canRemove = !isMemberOwner && isOwner;
                     
