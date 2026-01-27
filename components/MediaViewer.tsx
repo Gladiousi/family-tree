@@ -35,28 +35,53 @@ export default function MediaViewer({ open, onClose, media, initialIndex = 0 }: 
         }
     };
 
+    // Улучшенная функция скачивания
+    const handleDownload = async () => {
+        try {
+            const response = await fetch(currentMedia.url);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Определяем расширение файла
+            const extension = currentMedia.type === 'video' ? 'mp4' : 'jpg';
+            const fileName = `family-media-${currentMedia.id}.${extension}`;
+            
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Ошибка скачивания:', error);
+            // Фоллбэк метод
+            const link = document.createElement('a');
+            link.href = currentMedia.url;
+            link.download = `media-${currentMedia.id}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0 [&>button]:hidden">
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle className="flex items-center justify-between">
                         <span>Медиа ({currentIndex + 1} / {media.length})</span>
                         <div className="flex items-center gap-2">
-                            {currentMedia.type === 'photo' && (
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => {
-                                        const link = document.createElement('a');
-                                        link.href = currentMedia.url;
-                                        link.download = `image-${currentMedia.id}.jpg`;
-                                        link.click();
-                                    }}
-                                    title="Скачать изображение"
-                                >
-                                    <Download className="h-4 w-4" />
-                                </Button>
-                            )}
+                            <Button 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={handleDownload}
+                                title={`Скачать ${currentMedia.type === 'video' ? 'видео' : 'изображение'}`}
+                            >
+                                <Download className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={onClose}>
                                 <X className="h-4 w-4" />
                             </Button>
@@ -78,9 +103,8 @@ export default function MediaViewer({ open, onClose, media, initialIndex = 0 }: 
                                 src={currentMedia.url} 
                                 alt="Медиафайл" 
                                 fill
-                                className="object-contain cursor-zoom-in"
+                                className="object-contain"
                                 unoptimized
-                                onClick={() => window.open(currentMedia.url, '_blank')}
                             />
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
@@ -150,4 +174,3 @@ export default function MediaViewer({ open, onClose, media, initialIndex = 0 }: 
         </Dialog>
     );
 }
-

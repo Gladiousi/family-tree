@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Calendar, Users, Edit, Heart, ArrowLeft, User, Image, X } from 'lucide-react';
+import { Plus, Calendar, Users, Heart, ArrowLeft, User, Image as ImageIcon, Play } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import MemoryViewer from '@/components/MemoryViewer';
 import EditMemoryModal from '@/components/EditMemoryModal';
+import Image from 'next/image';
 
 export default function MemoriesPage() {
     const { id } = useParams();
@@ -44,10 +45,10 @@ export default function MemoriesPage() {
     });
 
     const createMemory = useMutation({
-        mutationFn: () => api.post('/api/memories/', { 
-            title, 
-            description, 
-            date, 
+        mutationFn: () => api.post('/api/memories/', {
+            title,
+            description,
+            date,
             family: id,
             node_ids: selectedNodeIds
         }),
@@ -149,7 +150,7 @@ export default function MemoriesPage() {
                     <p className="text-sm sm:text-base text-muted-foreground">Сохраняйте важные моменты вашей семьи</p>
                 </div>
                 <Button onClick={() => setOpen(true)} size="lg" className="w-full sm:w-auto">
-                    <Plus className="mr-2 h-4 w-4" /> 
+                    <Plus className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Добавить воспоминание</span>
                     <span className="sm:hidden">Добавить</span>
                 </Button>
@@ -166,51 +167,74 @@ export default function MemoriesPage() {
                 </div>
             ) : (
                 <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {memories.map((memory: any) => (
-                    <Card 
-                        key={memory.id} 
-                        className="p-4 sm:p-6 hover:shadow-lg transition-shadow group cursor-pointer"
-                        onClick={() => handleMemoryClick(memory)}
-                    >
-                        <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-semibold">{memory.title}</h3>
-                        </div>
-                        {memory.date && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
-                                <Calendar className="h-4 w-4" />
-                                {format(new Date(memory.date), 'dd.MM.yyyy')}
-                            </p>
-                        )}
-                        {memory.participants.length > 0 && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-2 mb-3">
-                                <Users className="h-4 w-4" />
-                                {memory.participants.map((p: any) => p.first_name || p.username).join(', ')}
-                            </p>
-                        )}
-                        {memory.nodes && memory.nodes.length > 0 && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-2 mb-3">
-                                <User className="h-4 w-4" />
-                                {memory.nodes.map((n: any) => n.name).join(', ')}
-                            </p>
-                        )}
-                        {memory.description && <p className="text-muted-foreground">{memory.description}</p>}
-                        {memory.media.length > 0 && (
-                            <div className="mt-4 grid grid-cols-2 gap-2">
-                                {memory.media.map((m: any) => (
-                                    <div key={m.id} className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
-                                        {m.type === 'video' ? (
-                                            <video controls className="w-full h-full object-cover">
-                                                <source src={m.url} />
-                                            </video>
+                    {memories.map((memory: any) => (
+                        <Card
+                            key={memory.id}
+                            className="p-4 sm:p-6 hover:shadow-lg transition-shadow group cursor-pointer"
+                            onClick={() => handleMemoryClick(memory)}
+                        >
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="text-xl font-semibold line-clamp-1">{memory.title}</h3>
+                            </div>
+                            {memory.date && (
+                                <p className="text-sm text-muted-foreground flex items-center gap-2 mb-2">
+                                    <Calendar className="h-4 w-4 flex-shrink-0" />
+                                    <span>{format(new Date(memory.date), 'dd.MM.yyyy')}</span>
+                                </p>
+                            )}
+                            {memory.participants && memory.participants.length > 0 && (
+                                <p className="text-sm text-muted-foreground flex items-center gap-2 mb-2 line-clamp-1">
+                                    <Users className="h-4 w-4 flex-shrink-0" />
+                                    <span className="truncate">{memory.participants.map((p: any) => p.first_name || p.username).join(', ')}</span>
+                                </p>
+                            )}
+                            {memory.nodes && memory.nodes.length > 0 && (
+                                <p className="text-sm text-muted-foreground flex items-center gap-2 mb-3 line-clamp-1">
+                                    <User className="h-4 w-4 flex-shrink-0" />
+                                    <span className="truncate">{memory.nodes.map((n: any) => n.name).join(', ')}</span>
+                                </p>
+                            )}
+                            {memory.description && (
+                                <p className="text-muted-foreground text-sm line-clamp-2 mb-3">{memory.description}</p>
+                            )}
+                            {memory.media && memory.media.length > 0 && (
+                                <div className="mt-4 grid grid-cols-2 gap-2">
+                                    {/* Первое медиа */}
+                                    <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
+                                        {memory.media[0].type === 'video' ? (
+                                            <div className="relative w-full h-full bg-gray-800">
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <Play className="h-8 w-8 text-white" />
+                                                </div>
+                                            </div>
                                         ) : (
-                                            <img src={m.url} alt="" className="w-full h-full object-cover" />
+                                            <Image
+                                                src={memory.media[0].url}
+                                                alt="Превью"
+                                                fill
+                                                className="object-cover"
+                                                unoptimized
+                                            />
                                         )}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </Card>
-                ))}
+                                    
+                                    {/* Счетчик остальных медиа */}
+                                    {memory.media.length > 1 && (
+                                        <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg overflow-hidden flex items-center justify-center border-2 border-primary/30">
+                                            <div className="text-center">
+                                                <div className="text-3xl font-bold text-primary">
+                                                    +{memory.media.length - 1}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground mt-1">
+                                                    {memory.media.length - 1 === 1 ? 'медиафайл' : 'медиафайлов'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </Card>
+                    ))}
                 </div>
             )}
 
@@ -267,7 +291,7 @@ export default function MemoriesPage() {
                         )}
                         <div>
                             <Label className="flex items-center gap-2 mb-2">
-                                <Image className="h-4 w-4" />
+                                <ImageIcon className="h-4 w-4" />
                                 Медиафайлы
                             </Label>
                             <Input
@@ -280,14 +304,14 @@ export default function MemoriesPage() {
                             {uploadingMedia && (
                                 <p className="text-sm text-muted-foreground mt-1">Загрузка...</p>
                             )}
-                            {createdMemoryId && (
+                            {!createdMemoryId && (
                                 <p className="text-sm text-muted-foreground mt-1">
-                                    Медиафайлы можно добавить после создания воспоминания
+                                    Сначала создайте воспоминание, затем добавьте медиафайлы
                                 </p>
                             )}
                         </div>
-                        <Button 
-                            onClick={() => createMemory.mutate()} 
+                        <Button
+                            onClick={() => createMemory.mutate()}
                             className="w-full"
                             disabled={createMemory.isPending}
                         >

@@ -188,3 +188,7 @@
     animation: modal-content-out 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
+
+.media-viewer-dialog [data-radix-dialog-close] {
+    display: none;
+}

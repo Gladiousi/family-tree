@@ -4,15 +4,24 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { format } from 'date-fns';
-import { Edit, Trash2, Calendar, Users, User } from 'lucide-react';
+import { Edit, Trash2, Calendar, Users, User, Play } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
-import type { MemoryViewerProps, MediaFile } from '@/types';
+import type { MemoryViewerProps } from '@/types/components';
+import type { MediaFile } from "@/types/models"
+import MediaViewer from '@/components/MediaViewer';
 
 export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, isDeleting = false }: MemoryViewerProps) {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
+    const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
     if (!memory) return null;
+
+    const handleMediaClick = (index: number) => {
+        setSelectedMediaIndex(index);
+        setMediaViewerOpen(true);
+    };
 
     return (
         <>
@@ -47,7 +56,7 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                             <div className="pt-4 border-t">
                                 <h3 className="font-semibold mb-2">Описание</h3>
                                 {memory.description_html ? (
-                                    <div 
+                                    <div
                                         className="text-muted-foreground prose prose-sm max-w-none"
                                         dangerouslySetInnerHTML={{ __html: memory.description_html }}
                                     />
@@ -59,42 +68,28 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
 
                         {memory.media && memory.media.length > 0 && (
                             <div className="pt-4 border-t">
-                                <h3 className="font-semibold mb-3">Медиа</h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <h3 className="font-semibold mb-3">Медиа ({memory.media.length})</h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {memory.media.map((m: MediaFile, index: number) => (
-                                        <div 
-                                            key={m.id} 
-                                            className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer group"
-                                            onClick={() => {
-                                                const link = document.createElement('a');
-                                                if (m.type === 'photo') {
-                                                    link.href = m.url;
-                                                    link.download = `memory-${m.id}.jpg`;
-                                                    link.click();
-                                                } else {
-                                                    window.open(m.url, '_blank');
-                                                }
-                                            }}
+                                        <div
+                                            key={m.id}
+                                            className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group"
+                                            onClick={() => handleMediaClick(index)}
                                         >
                                             {m.type === 'video' ? (
-                                                <video controls className="w-full h-full object-cover">
-                                                    <source src={m.url} />
-                                                </video>
-                                            ) : (
                                                 <div className="relative w-full h-full">
-                                                    <Image 
-                                                        src={m.url} 
-                                                        alt="Медиафайл воспоминания" 
-                                                        fill
-                                                        className="object-cover"
-                                                        unoptimized
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                        <span className="opacity-0 group-hover:opacity-100 text-white text-sm font-medium transition-opacity">
-                                                            Кликните для скачивания
-                                                        </span>
+                                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                                                        <Play className="h-8 w-8 text-white" />
                                                     </div>
                                                 </div>
+                                            ) : (
+                                                <Image
+                                                    src={m.url}
+                                                    alt="Медиафайл воспоминания"
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized
+                                                />
                                             )}
                                         </div>
                                     ))}
@@ -103,16 +98,16 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                         )}
                     </div>
                     <DialogFooter className="flex flex-row gap-2 justify-end">
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             size="icon"
                             onClick={onEdit}
                             className="h-9 w-9"
                         >
                             <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                            variant="ghost" 
+                        <Button
+                            variant="ghost"
                             size="icon"
                             onClick={() => setDeleteConfirmOpen(true)}
                             disabled={isDeleting}
@@ -123,6 +118,16 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Просмотр медиа */}
+            {memory.media && memory.media.length > 0 && (
+                <MediaViewer
+                    open={mediaViewerOpen}
+                    onClose={() => setMediaViewerOpen(false)}
+                    media={memory.media}
+                    initialIndex={selectedMediaIndex}
+                />
+            )}
 
             <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
                 <AlertDialogContent>
@@ -149,4 +154,3 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
         </>
     );
 }
-
