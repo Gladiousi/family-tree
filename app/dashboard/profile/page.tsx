@@ -15,7 +15,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { sanitizeTextField, isValidEmail, isValidUsername, rateLimiter } from '@/lib/security';
-import type { UserData } from '@/types';
+import type { UserData } from '@/types/models';
 
 export default function ProfilePage() {
     const router = useRouter();

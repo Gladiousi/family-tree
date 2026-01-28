@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { format } from 'date-fns';
 import Image from 'next/image';
-import type { CustomNodeData } from '@/types';
+import { CustomNodeData } from '@/types/components';
 
 function CustomNode({ data }: NodeProps<CustomNodeData>) {
     const { label, birthDate, deathDate, photoUrl, age_display } = data;

@@ -33,12 +33,12 @@ export default function MemoriesPage() {
     const [uploadingMedia, setUploadingMedia] = useState(false);
     const [createdMemoryId, setCreatedMemoryId] = useState<string | null>(null);
 
-    const { data: memories = [] } = useQuery({
+    const { data: memories = [] }: any = useQuery({
         queryKey: ['memories', id],
         queryFn: () => api.get(`/api/memories/?family=${id}`),
     });
 
-    const { data: nodes = [] } = useQuery({
+    const { data: nodes = [] }: any = useQuery({
         queryKey: ['nodes', id],
         queryFn: () => api.get(`/api/nodes/?family=${id}`),
         enabled: open,

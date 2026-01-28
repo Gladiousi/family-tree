@@ -5,9 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { NodeData, NodeEditorProps } from '@/types/components';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import type { NodeEditorProps, NodeData } from '@/types';
 
 export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorProps) {
     const getInitialData = () => ({
@@ -23,6 +23,7 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
 
     useEffect(() => {
         if (!open) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setData({
                 name: '',
                 birthDate: '',

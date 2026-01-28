@@ -8,7 +8,7 @@ import CreateFamilyModal from '@/components/CreateFamilyModal';
 import FamilyCard from '@/components/FamilyCard';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Family } from '@/types';
+import { Family } from '@/types/models';
 import { LoadingPage } from '@/components/ui/loading';
 
 export default function Dashboard() {

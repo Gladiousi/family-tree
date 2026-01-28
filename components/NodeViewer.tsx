@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { Edit, Trash2, Calendar } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
-import type { NodeViewerProps } from '@/types';
+import { NodeViewerProps } from '@/types/components';
 
 export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDeleting = false }: NodeViewerProps) {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);

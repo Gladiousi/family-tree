@@ -7,9 +7,9 @@ import { useState, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { User } from '@/types';
 import { sanitizeTextField, isValidId, rateLimiter } from '@/lib/security';
-import type { AddMemberModalProps } from '@/types';
+import { AddMemberModalProps } from '@/types/components';
+import { User } from '@/types/models';
 
 export default function AddMemberModal({ open, onClose, familyId }: AddMemberModalProps) {
     const [search, setSearch] = useState('');

@@ -58,12 +58,16 @@ export type FamilyTree = {
     edges: { source: string; target: string }[];
 };
 
+//что-то странное, на мушке
 export type TreeEdgeData = {
     id: string;
+    source_id: string;
+    target_id: string;
     source: string;
     target: string;
     family: string;
 };
+
 
 export type TreeNodeData = {
     id: string;

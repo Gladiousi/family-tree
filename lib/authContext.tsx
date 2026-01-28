@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
-import type { AuthUser } from '@/types';
+import { AuthUser } from '@/types/store';
+import { User } from '@/types/models';
 
 type AuthContextState = {
     user: AuthUser | null;

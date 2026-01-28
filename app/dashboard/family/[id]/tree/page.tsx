@@ -37,7 +37,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-import type { TreeNodeData, TreeEdgeData, TreeNode } from '@/types';
+import type { TreeNodeData, TreeEdgeData, TreeNode } from '@/types/models';
 
 const nodeTypes = {
     custom: CustomNode,

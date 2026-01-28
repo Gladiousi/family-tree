@@ -18,7 +18,8 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { User, Users, X, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
-import type { Memory, TreeNode, Family, EditMemoryModalProps } from '@/types';
+import { EditMemoryModalProps } from '@/types/components';
+import { Family, Memory, TreeNode } from '@/types/models';
 
 export default function EditMemoryModal({
     open,

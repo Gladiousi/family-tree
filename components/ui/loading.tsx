@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
+import { LoadingPageProps, LoadingSpinnerProps } from "@/types/components";
 
-import type { LoadingSpinnerProps, LoadingPageProps } from '@/types';
 
 type LoadingSpinnerPropsWithClassName = LoadingSpinnerProps & {
     className?: string;

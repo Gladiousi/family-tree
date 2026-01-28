@@ -30,12 +30,12 @@ export default function EditMemoryPage() {
         queryFn: () => api.get<Memory>(`/api/memories/${memoryId}/`),
     });
 
-    const { data: nodes = [] } = useQuery({
+    const { data: nodes = [] }: any = useQuery({
         queryKey: ['nodes', id],
         queryFn: () => api.get(`/api/nodes/?family=${id}`),
     });
 
-    const { data: family } = useQuery({
+    const { data: family }: any = useQuery({
         queryKey: ['family', id],
         queryFn: () => api.get(`/api/families/${id}/`),
     });

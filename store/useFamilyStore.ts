@@ -1,5 +1,5 @@
+import { Family } from '@/types/models';
 import { create } from 'zustand';
-import type { Family } from '@/types';
 
 type FamilyStoreState = {
   families: Family[];

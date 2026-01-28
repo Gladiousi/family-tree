@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { InviteModalProps } from '@/types/components';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { InviteModalProps } from '@/types';
 
 export default function InviteModal({ open, onClose, familyId }: InviteModalProps) {
     const [email, setEmail] = useState('');

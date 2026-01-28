@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from '@/lib/api';
-import type { AuthUser, AuthState } from '@/types';
+import { AuthUser } from '@/types/store';
+import { User } from '@/types/models';
 
 type AuthStoreState = {
   user: AuthUser | null;

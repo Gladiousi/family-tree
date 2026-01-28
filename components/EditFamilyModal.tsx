@@ -15,10 +15,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Family } from '@/types';
 import { sanitizeTextField, rateLimiter } from '@/lib/security';
-import type { EditFamilyModalProps } from '@/types';
 import Image from 'next/image';
+import { EditFamilyModalProps } from '@/types/components';
 
 export default function EditFamilyModal({
     open,

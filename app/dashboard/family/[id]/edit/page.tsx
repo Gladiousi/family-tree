@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { LoadingPage } from '@/components/ui/loading';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Family } from '@/types';
+import { Family } from '@/types/models';
 import { sanitizeTextField, rateLimiter } from '@/lib/security';
 
 export default function EditFamilyPage() {
