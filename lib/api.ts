@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://familytree-backend-k4i5.onrender.com/api';
 const REQUEST_TIMEOUT = 30000;
 
 const getToken = () => (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
