@@ -38,6 +38,8 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import type { TreeNodeData, TreeEdgeData, TreeNode } from '@/types/models';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import type { Family } from '@/types/models';
 
 const nodeTypes = {
     custom: CustomNode,
@@ -63,6 +65,11 @@ export default function FamilyTreePage() {
     const { data: treeEdges = [], isLoading: edgesLoading } = useQuery({
         queryKey: ['edges', id],
         queryFn: () => api.get<TreeEdgeData[]>(`/api/edges/?family=${id}`),
+    });
+
+    const { data: family } = useQuery({
+        queryKey: ['family', id],
+        queryFn: () => api.get<Family>(`/api/families/${id}/`),
     });
 
     useEffect(() => {
@@ -256,17 +263,37 @@ export default function FamilyTreePage() {
                 return;
             }
 
-            setEdges((eds) => addEdge({ ...params, type: 'smoothstep', id: edgeId }, eds));
+            const sourceNode = treeNodes.find((n: TreeNode) => String(n.id) === params.source);
+            const targetNode = treeNodes.find((n: TreeNode) => String(n.id) === params.target);
+            let sourceId = params.source;
+            let targetId = params.target;
+            if (sourceNode?.birth_date && targetNode?.birth_date) {
+                const sourceBirth = new Date(sourceNode.birth_date).getTime();
+                const targetBirth = new Date(targetNode.birth_date).getTime();
+                if (sourceBirth > targetBirth) {
+                    sourceId = params.target;
+                    targetId = params.source;
+                }
+            }
+
+            const finalEdgeId = `${sourceId}-${targetId}`;
+            const existingByOrder = edges.find((e) => e.source === sourceId && e.target === targetId);
+            if (existingByOrder) {
+                toast.error('Такая связь уже существует (родитель → ребёнок)');
+                return;
+            }
+
+            setEdges((eds) => addEdge({ ...params, source: sourceId, target: targetId, type: 'smoothstep', id: finalEdgeId }, eds));
             saveEdge.mutate(
-                { source: params.source, target: params.target },
+                { source: sourceId, target: targetId },
                 {
                     onError: () => {
-                        setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+                        setEdges((eds) => eds.filter((e) => e.id !== finalEdgeId));
                     },
                 }
             );
         },
-        [edges, setEdges, saveEdge]
+        [edges, treeNodes, setEdges, saveEdge]
     );
 
     const handleNodesChange = useCallback(
@@ -391,14 +418,17 @@ export default function FamilyTreePage() {
     return (
         <>
             <div className="h-screen flex flex-col bg-gray-50">
-                <div className="p-3 sm:p-4 md:p-6 border-b flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 bg-white z-10 shadow-sm">
+                <div className="p-3 sm:p-4 md:p-6 border-b flex flex-col gap-3 bg-white z-10 shadow-sm">
+                    <Breadcrumbs
+                        items={[
+                            { label: 'Мои семьи', href: '/dashboard' },
+                            { label: family?.name || 'Семья', href: `/dashboard/family/${id}` },
+                            { label: 'Древо' },
+                        ]}
+                        className="text-xs sm:text-sm"
+                    />
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
                     <div className="flex items-center gap-2 sm:gap-4">
-                        <Link href={`/dashboard/family/${id}`}>
-                            <Button variant="ghost" size="sm" className="shrink-0">
-                                <ArrowLeft className="mr-1 sm:mr-2 h-4 w-4" />
-                                <span className="hidden sm:inline">Назад</span>
-                            </Button>
-                        </Link>
                         <div className="min-w-0">
                             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold truncate">
                                 Семейное древо
@@ -410,6 +440,7 @@ export default function FamilyTreePage() {
                                     : nodes.length < 5
                                       ? 'человека'
                                       : 'человек'}
+                                {' · Связь: от родителя к ребёнку (можно тянуть в любую сторону)'}
                             </p>
                         </div>
                     </div>
@@ -443,6 +474,7 @@ export default function FamilyTreePage() {
                             <span className="hidden sm:inline">Добавить человека</span>
                             <span className="sm:hidden">Добавить</span>
                         </Button>
+                    </div>
                     </div>
                 </div>
                 <div className="flex-1 relative">
@@ -486,8 +518,8 @@ export default function FamilyTreePage() {
                         fitView
                         className="bg-gray-50"
                     >
+                        <Controls className='absolute top-5 h-fit'/>
                         <Background />
-                        <Controls />
                     </ReactFlow>
                     {nodes.length === 0 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm">

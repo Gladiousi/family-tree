@@ -22,6 +22,7 @@ export default function EditMemoryPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState('');
+    const todayString = new Date().toISOString().split('T')[0];
     const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
     const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
 
@@ -131,6 +132,7 @@ export default function EditMemoryPage() {
                             id="date"
                             type="date"
                             value={date}
+                            max={todayString}
                             onChange={(e) => setDate(e.target.value)}
                             className="mt-2"
                         />

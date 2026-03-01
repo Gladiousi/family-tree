@@ -15,6 +15,7 @@ import { sanitizeTextField, isValidUsername, rateLimiter } from '@/lib/security'
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [formError, setFormError] = useState<string | null>(null);
     const { login } = useAuthStore();
     const router = useRouter();
 
@@ -49,8 +50,9 @@ export default function LoginPage() {
             }
         },
         onSuccess: (data: any) => {
+            setFormError(null);
             login(data.user, data.access);
-            rateLimiter.reset('login');
+            // rateLimiter.reset('login');
             toast.success('Вход выполнен успешно');
             router.push('/dashboard');
         },
@@ -58,7 +60,9 @@ export default function LoginPage() {
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('token');
             }
-            toast.error(err.message || 'Неверный логин или пароль');
+            const message = err.message || 'Неверный логин или пароль';
+            setFormError(message);
+            toast.error(message);
         },
     });
 
@@ -72,21 +76,30 @@ export default function LoginPage() {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
+                        setFormError(null);
                         mutation.mutate({ username, password });
                     }}
                     className="space-y-4"
                 >
                     <div>
                         <Label>Логин</Label>
-                        <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
+                        <Input value={username} placeholder='Введите логин' onChange={(e) => setUsername(e.target.value)} required />
                     </div>
                     <div>
                         <Label>Пароль</Label>
-                        <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <Input type="password" value={password} placeholder='Введите пароль' onChange={(e) => setPassword(e.target.value)} required />
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Используйте пароль с минимум 8 символами, включая буквы и цифры.
+                        </p>
                     </div>
                     <Button type="submit" className="w-full" disabled={mutation.isPending}>
                         {mutation.isPending ? 'Вход...' : 'Войти'}
                     </Button>
+                    {formError && (
+                        <p className="text-sm text-red-500 mt-2" role="alert">
+                            {formError}
+                        </p>
+                    )}
                 </form>
 
                 <p className="text-center text-sm text-muted-foreground">

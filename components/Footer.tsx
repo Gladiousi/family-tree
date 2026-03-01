@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { Heart, Home, LayoutDashboard, LogIn, Info, HelpCircle, TreePine } from 'lucide-react';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export function Footer() {
+    const { user } = useAuthStore();
+
     return (
         <footer className="border-t bg-background/95 backdrop-blur-sm mt-auto">
             <div className="container mx-auto px-4 py-8 sm:py-12">
@@ -44,15 +47,17 @@ export function Footer() {
                                     Дашборд
                                 </Link>
                             </li>
-                            <li>
-                                <Link
-                                    href="/login"
-                                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
-                                >
-                                    <span className="w-1 h-1 rounded-full bg-primary/0 group-hover:bg-primary transition-all duration-200" />
-                                    Войти
-                                </Link>
-                            </li>
+                            {!user && (
+                                <li>
+                                    <Link
+                                        href="/login"
+                                        className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 group"
+                                    >
+                                        <span className="w-1 h-1 rounded-full bg-primary/0 group-hover:bg-primary transition-all duration-200" />
+                                        Войти
+                                    </Link>
+                                </li>
+                            )}
                         </ul>
                     </div>
                     <div>

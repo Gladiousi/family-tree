@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { sanitizeTextField, isValidEmail, isValidUsername, rateLimiter } from '@/lib/security';
 import type { UserData } from '@/types/models';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -26,6 +27,8 @@ export default function ProfilePage() {
     const [firstName, setFirstName] = useState('');
     const [birthDate, setBirthDate] = useState('');
     const [deathDate, setDeathDate] = useState('');
+    const [formError, setFormError] = useState<string | null>(null);
+    const todayString = new Date().toISOString().split('T')[0];
 
     const { data: user, isLoading } = useQuery({
         queryKey: ['user', currentUser?.id],
@@ -94,6 +97,7 @@ export default function ProfilePage() {
             });
         },
         onSuccess: (updatedUser: UserData) => {
+            setFormError(null);
             queryClient.invalidateQueries({ queryKey: ['user', currentUser?.id] });
             const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
             if (token) {
@@ -102,7 +106,9 @@ export default function ProfilePage() {
             toast.success('Профиль успешно обновлен');
         },
         onError: (err: any) => {
-            toast.error(err.message || 'Ошибка обновления профиля');
+            const message = err.message || 'Ошибка обновления профиля';
+            setFormError(message);
+            toast.error(message);
         },
     });
 
@@ -111,6 +117,30 @@ export default function ProfilePage() {
         if (!username.trim() || !email.trim()) {
             toast.error('Имя пользователя и email обязательны');
             return;
+        }
+        // Валидация логики дат на клиенте
+        if (birthDate) {
+            const birth = new Date(birthDate);
+            const today = new Date();
+            if (birth > today) {
+                toast.error('Дата рождения не может быть в будущем');
+                return;
+            }
+        }
+        if (deathDate) {
+            const death = new Date(deathDate);
+            const today = new Date();
+            if (death > today) {
+                toast.error('Дата смерти не может быть в будущем');
+                return;
+            }
+            if (birthDate) {
+                const birth = new Date(birthDate);
+                if (death < birth) {
+                    toast.error('Дата смерти не может быть раньше даты рождения');
+                    return;
+                }
+            }
         }
         updateProfile.mutate({ 
             username, 
@@ -132,12 +162,14 @@ export default function ProfilePage() {
 
     return (
         <div className="container mx-auto p-4 md:p-6 max-w-2xl">
+            <Breadcrumbs
+                items={[
+                    { label: 'Мои семьи', href: '/dashboard' },
+                    { label: 'Профиль' },
+                ]}
+                className="mb-4"
+            />
             <div className="mb-6">
-                <Link href="/dashboard">
-                    <Button variant="ghost" size="sm" className="mb-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Назад
-                    </Button>
-                </Link>
                 <h1 className="text-3xl font-bold flex items-center gap-3">
                     <User className="h-8 w-8" />
                     Мой профиль
@@ -240,6 +272,7 @@ export default function ProfilePage() {
                             id="birthDate"
                             type="date"
                             value={birthDate}
+                            max={todayString}
                             onChange={(e) => setBirthDate(e.target.value)}
                             className="mt-2"
                         />
@@ -254,8 +287,15 @@ export default function ProfilePage() {
                             onChange={(e) => setDeathDate(e.target.value)}
                             className="mt-2"
                             min={birthDate || undefined}
+                            max={todayString}
                         />
                     </div>
+
+                    {formError && (
+                        <p className="text-sm text-red-500" role="alert">
+                            {formError}
+                        </p>
+                    )}
 
                     <div className="flex gap-4 justify-end">
                         <Button type="submit" disabled={updateProfile.isPending}>

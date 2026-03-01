@@ -19,6 +19,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { LoadingSpinner } from '@/components/ui/loading';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 export default function FamilyPage() {
     const { id } = useParams();
@@ -138,12 +139,14 @@ export default function FamilyPage() {
 
     return (
         <div className="container mx-auto p-4 md:p-6">
+            <Breadcrumbs
+                items={[
+                    { label: 'Мои семьи', href: '/dashboard' },
+                    { label: family.name },
+                ]}
+                className="mb-4"
+            />
             <div className="mb-6">
-                <Link href="/dashboard">
-                    <Button variant="ghost" size="sm" className="mb-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Назад к семьям
-                    </Button>
-                </Link>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
                     <div className="min-w-0 flex-1 flex items-start gap-4">
                         {family.photo_url && (

@@ -9,6 +9,8 @@ import { NodeData, NodeEditorProps } from '@/types/components';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
+const todayString = new Date().toISOString().split('T')[0];
+
 export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorProps) {
     const getInitialData = () => ({
         name: node?.data?.label || node?.data?.name || '',
@@ -83,6 +85,24 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
             toast.error('Дата рождения обязательна');
             return;
         }
+
+        const birth = data.birthDate ? new Date(data.birthDate) : null;
+        const death = data.deathDate ? new Date(data.deathDate) : null;
+        const today = new Date();
+
+        if (birth && birth > today) {
+            toast.error('Дата рождения не может быть в будущем');
+            return;
+        }
+        if (death && death > today) {
+            toast.error('Дата смерти не может быть в будущем');
+            return;
+        }
+        if (birth && death && death < birth) {
+            toast.error('Дата смерти не может быть раньше даты рождения');
+            return;
+        }
+
         onSave(data);
     };
 
@@ -122,6 +142,7 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
                             <Input
                                 type="date"
                                 value={data.birthDate}
+                                max={todayString}
                                 onChange={(e) => setData({ ...data, birthDate: e.target.value })}
                             />
                         </div>
@@ -130,6 +151,8 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
                             <Input
                                 type="date"
                                 value={data.deathDate}
+                                min={data.birthDate || undefined}
+                                max={todayString}
                                 onChange={(e) => setData({ ...data, deathDate: e.target.value })}
                             />
                         </div>

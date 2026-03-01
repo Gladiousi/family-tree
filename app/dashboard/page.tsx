@@ -3,28 +3,55 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import CreateFamilyModal from '@/components/CreateFamilyModal';
 import FamilyCard from '@/components/FamilyCard';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Family } from '@/types/models';
-import { LoadingPage } from '@/components/ui/loading';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import { FamilyCardSkeleton } from '@/components/FamilyCardSkeleton';
 
 export default function Dashboard() {
     const [createOpen, setCreateOpen] = useState(false);
+    const [search, setSearch] = useState('');
     const { data: families = [], isLoading } = useQuery({
         queryKey: ['families'],
         queryFn: () => api.get<Family[]>('/api/families/'),
     });
 
+    const filteredFamilies = useMemo(() => {
+        if (!search.trim()) return families;
+        const q = search.trim().toLowerCase();
+        return families.filter((f) => f.name.toLowerCase().includes(q) || (f.description || '').toLowerCase().includes(q));
+    }, [families, search]);
+
     if (isLoading) {
-        return <LoadingPage />;
+        return (
+            <div className="container mx-auto p-4 md:p-6">
+                <Breadcrumbs items={[{ label: 'Мои семьи' }]} className="mb-4" />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+                    <div className="min-w-0">
+                        <div className="h-9 w-48 bg-muted rounded animate-pulse mb-2" />
+                        <div className="h-5 w-72 bg-muted rounded animate-pulse" />
+                    </div>
+                    <div className="h-10 w-32 bg-muted rounded animate-pulse" />
+                </div>
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3].map((i) => (
+                        <FamilyCardSkeleton key={i} />
+                    ))}
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="container mx-auto p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <Breadcrumbs items={[{ label: 'Мои семьи' }]} className="mb-4" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
                 <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                         Мои семьи
@@ -41,6 +68,20 @@ export default function Dashboard() {
                     <Plus className="mr-2 h-4 w-4" /> Создать семью
                 </Button>
             </div>
+
+            {families.length > 0 && (
+                <div className="relative max-w-md mb-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Поиск по названию или описанию..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9"
+                        aria-label="Поиск семей"
+                    />
+                </div>
+            )}
 
             {families.length === 0 ? (
                 <Card className="p-12 text-center shadow-xl border-2 border-dashed hover:border-primary/30 transition-all duration-300">
@@ -61,9 +102,14 @@ export default function Dashboard() {
                 </Card>
             ) : (
                 <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {families.map((family) => (
+                    {filteredFamilies.map((family) => (
                         <FamilyCard key={family.id} family={family} />
                     ))}
+                    {filteredFamilies.length === 0 && search && (
+                        <p className="col-span-full text-center text-muted-foreground py-8">
+                            По запросу «{search}» ничего не найдено
+                        </p>
+                    )}
                 </div>
             )}
 

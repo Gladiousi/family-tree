@@ -18,6 +18,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import MemoryViewer from '@/components/MemoryViewer';
 import EditMemoryModal from '@/components/EditMemoryModal';
 import Image from 'next/image';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
+import type { Family } from '@/types/models';
 
 export default function MemoriesPage() {
     const { id } = useParams();
@@ -29,6 +31,7 @@ export default function MemoriesPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState('');
+    const todayString = new Date().toISOString().split('T')[0];
     const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
     const [uploadingMedia, setUploadingMedia] = useState(false);
     const [createdMemoryId, setCreatedMemoryId] = useState<string | null>(null);
@@ -42,6 +45,11 @@ export default function MemoriesPage() {
         queryKey: ['nodes', id],
         queryFn: () => api.get(`/api/nodes/?family=${id}`),
         enabled: open,
+    });
+
+    const { data: family } = useQuery({
+        queryKey: ['family', id],
+        queryFn: () => api.get<Family>(`/api/families/${id}/`),
     });
 
     const createMemory = useMutation({
@@ -139,11 +147,14 @@ export default function MemoriesPage() {
 
     return (
         <div className="container mx-auto p-4 md:p-6">
-            <Link href={`/dashboard/family/${id}`}>
-                <Button variant="ghost" size="sm" className="mb-4">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Назад к семье
-                </Button>
-            </Link>
+            <Breadcrumbs
+                items={[
+                    { label: 'Мои семьи', href: '/dashboard' },
+                    { label: family?.name || 'Семья', href: `/dashboard/family/${id}` },
+                    { label: 'Воспоминания' },
+                ]}
+                className="mb-4"
+            />
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
                 <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Воспоминания</h1>
@@ -259,7 +270,12 @@ export default function MemoriesPage() {
                         </div>
                         <div>
                             <Label>Дата</Label>
-                            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                            <Input
+                                type="date"
+                                value={date}
+                                max={todayString}
+                                onChange={(e) => setDate(e.target.value)}
+                            />
                         </div>
                         {nodes.length > 0 && (
                             <div>

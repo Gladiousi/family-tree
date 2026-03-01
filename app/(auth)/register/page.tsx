@@ -17,6 +17,7 @@ export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
+    const [formError, setFormError] = useState<string | null>(null);
     const { login } = useAuthStore();
     const router = useRouter();
 
@@ -50,6 +51,7 @@ export default function RegisterPage() {
             });
         },
         onSuccess: (data: any) => {
+            setFormError(null);
             if (data && data.user && data.access) {
                 login(data.user, data.access);
                 rateLimiter.reset('register');
@@ -60,7 +62,9 @@ export default function RegisterPage() {
             }
         },
         onError: (err: any) => {
-            toast.error(err.message || 'Ошибка регистрации');
+            const message = err.message || 'Ошибка регистрации';
+            setFormError(message);
+            toast.error(message);
         },
     });
 
@@ -74,6 +78,7 @@ export default function RegisterPage() {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
+                        setFormError(null);
                         mutation.mutate({ username, email, password, first_name: firstName });
                     }}
                     className="space-y-4"
@@ -129,6 +134,11 @@ export default function RegisterPage() {
                             Минимум 8 символов, включая буквы и цифры
                         </p>
                     </div>
+                    {formError && (
+                        <p className="text-sm text-red-500" role="alert">
+                            {formError}
+                        </p>
+                    )}
                     <Button type="submit" className="w-full" disabled={mutation.isPending}>
                         {mutation.isPending ? 'Регистрация...' : 'Зарегистрироваться'}
                     </Button>

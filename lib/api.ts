@@ -46,11 +46,12 @@ export const api = {
         const token = getToken();
         const headers: HeadersInit = { 'Content-Type': 'application/json' };
         if (token) headers.Authorization = `Bearer ${token}`;
+        const isAuthEndpoint = path.startsWith('/api/auth/login') || path.startsWith('/api/auth/register');
 
         try {
             const res = await fetchWithTimeout(`${API_URL}${path}`, { headers });
-            
-            if (res.status === 401) {
+
+            if (res.status === 401 && !isAuthEndpoint) {
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('token');
                     window.location.href = '/login';
@@ -76,6 +77,7 @@ export const api = {
         const token = getToken();
         const headers: HeadersInit = { 'Content-Type': 'application/json' };
         if (token) headers.Authorization = `Bearer ${token}`;
+        const isAuthEndpoint = path.startsWith('/api/auth/login') || path.startsWith('/api/auth/register');
 
         try {
             const res = await fetchWithTimeout(`${API_URL}${path}`, {
@@ -83,8 +85,8 @@ export const api = {
                 headers,
                 body: JSON.stringify(body),
             });
-            
-            if (res.status === 401) {
+
+            if (res.status === 401 && !isAuthEndpoint) {
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('token');
                     window.location.href = '/login';

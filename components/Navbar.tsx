@@ -75,14 +75,6 @@ export function Navbar() {
                                     <span>Профиль</span>
                                 </Link>
                                 <div className="flex items-center gap-3 ml-2 pl-3 border-l">
-                                    <Avatar className="h-8 w-8 border-2 border-primary/20">
-                                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
-                                            {userInitials}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm font-medium text-foreground max-w-[120px] truncate">
-                                        {user.first_name || user.username}
-                                    </span>
                                     <Button
                                         variant="ghost"
                                         size="sm"
