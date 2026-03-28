@@ -133,7 +133,7 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
 
                     <div>
                         <Label>Имя</Label>
-                        <Input value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} />
+                        <Input value={data.name} placeholder='Введите имя' onChange={(e) => setData({ ...data, name: e.target.value })} />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -161,6 +161,7 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
                     <div>
                         <Label>История</Label>
                         <Textarea
+                        placeholder='Напишите историю об этом человеке'
                             value={data.bio}
                             onChange={(e) => setData({ ...data, bio: e.target.value })}
                             rows={4}
