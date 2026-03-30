@@ -18,7 +18,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Plus, TreePine, Save } from 'lucide-react';
+import { Plus, TreePine, Save, Link2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useState, useCallback, useEffect } from 'react';
@@ -55,6 +55,8 @@ export default function FamilyTreePage() {
     const [editorOpen, setEditorOpen] = useState(false);
     const [viewerOpen, setViewerOpen] = useState(false);
     const [pendingPositions, setPendingPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
+    const [linkMode, setLinkMode] = useState(false);
+    const [linkSourceId, setLinkSourceId] = useState<string | null>(null);
 
     const { data: treeNodes = [], isLoading: nodesLoading } = useQuery({
         queryKey: ['nodes', id],
@@ -244,6 +246,19 @@ export default function FamilyTreePage() {
         },
     });
 
+    const clearLinkMode = useCallback(() => {
+        setLinkMode(false);
+        setLinkSourceId(null);
+    }, []);
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') clearLinkMode();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [clearLinkMode]);
+
     const onConnect = useCallback(
         (params: Connection) => {
             if (!params.source || !params.target) return;
@@ -281,7 +296,18 @@ export default function FamilyTreePage() {
                 return;
             }
 
-            setEdges((eds) => addEdge({ ...params, source: sourceId, target: targetId, type: 'smoothstep', id: finalEdgeId }, eds));
+            setEdges((eds) =>
+                addEdge(
+                    {
+                        ...params,
+                        source: sourceId,
+                        target: targetId,
+                        type: 'smoothstep',
+                        id: finalEdgeId,
+                    },
+                    eds
+                )
+            );
             saveEdge.mutate(
                 { source: sourceId, target: targetId },
                 {
@@ -331,14 +357,35 @@ export default function FamilyTreePage() {
     );
 
     const onNodeClick = useCallback((_: any, node: Node) => {
+        const nodeId = String(node.id);
+
+        if (linkMode) {
+            if (!linkSourceId) {
+                setLinkSourceId(nodeId);
+                return;
+            }
+
+            if (linkSourceId === nodeId) {
+                toast.error('Нельзя связать узел сам с собой');
+                return;
+            }
+
+            onConnect({ source: linkSourceId, target: nodeId } as Connection);
+            clearLinkMode();
+            return;
+        }
+
         setSelectedNode(node);
         setViewerOpen(true);
-    }, []);
+    }, [linkMode, linkSourceId, onConnect, clearLinkMode]);
 
-    const onEdgeClick = useCallback((_: any, edge: Edge) => {
-        setSelectedEdge(edge);
-        setDeleteEdgeOpen(true);
-    }, []);
+    const onEdgeClick = useCallback(
+        (_: any, edge: Edge) => {
+            setSelectedEdge(edge);
+            setDeleteEdgeOpen(true);
+        },
+        []
+    );
 
     const handleDeleteEdge = useCallback(() => {
         if (selectedEdge) {
@@ -438,8 +485,17 @@ export default function FamilyTreePage() {
                                     : nodes.length < 5
                                       ? 'человека'
                                       : 'человек'}
-                                {' · Связь: от родителя к ребёнку (можно тянуть в любую сторону)'}
+                                {' · Связь: от родителя к ребёнку'}
+                                <span className="hidden sm:inline">{' · Добавляйте связи кнопкой или перетаскиванием от узла'}</span>
                             </p>
+
+                            {linkMode && (
+                                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                                    {linkSourceId
+                                        ? 'Кликните по ребёнку (целевому узлу)'
+                                        : 'Кликните по родителю (исходному узлу)'}
+                                </p>
+                            )}
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -463,6 +519,31 @@ export default function FamilyTreePage() {
                             </Button>
                         )}
                         <Button
+                            onClick={() => {
+                                if (linkMode) {
+                                    clearLinkMode();
+                                    return;
+                                }
+                                setLinkMode(true);
+                                setLinkSourceId(null);
+                                setViewerOpen(false);
+                                setSelectedNode(null);
+                            }}
+                            variant={linkMode ? 'default' : 'outline'}
+                            size="sm"
+                            className="flex-1 sm:flex-none"
+                        >
+                            <Link2 className="mr-2 h-4 w-4" />
+                            <span className="hidden sm:inline">
+                                {linkMode
+                                    ? linkSourceId
+                                        ? 'Выберите ребёнка'
+                                        : 'Выберите родителя'
+                                    : 'Связи (клик-клик)'}
+                            </span>
+                            <span className="sm:hidden">Связи</span>
+                        </Button>
+                        <Button
                             onClick={addNode}
                             size="sm"
                             variant="default"
@@ -482,7 +563,7 @@ export default function FamilyTreePage() {
                         nodeTypes={nodeTypes}
                         onNodesChange={handleNodesChange}
                         nodesDraggable={true}
-                        nodesConnectable={true}
+                        nodesConnectable={false}
                         elementsSelectable={true}
                         selectNodesOnDrag={false}
                         onEdgesChange={(changes) => {
