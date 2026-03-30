@@ -106,7 +106,7 @@ export default function FamilyTreePage() {
                     id: e.id || `${sourceId}-${targetId}`,
                     source: String(sourceId),
                     target: String(targetId),
-                    type: 'smoothstep',
+                    type: 'step',
                 };
             });
             setEdges(flowEdges);
@@ -595,7 +595,7 @@ export default function FamilyTreePage() {
                         edgesFocusable={true}
                         edgesUpdatable={false}
                         fitView
-                        className="bg-background"
+                        className="bg-background truncate whitespace-pre-wrap line-clamp-1 break-all w-fit"
                     >
                         <Controls className='absolute top-5 h-fit'/>
                         <Background />

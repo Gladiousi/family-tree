@@ -160,7 +160,7 @@ export default function EditMemoryPage() {
                                         />
                                         <label
                                             htmlFor={`node-${node.id}`}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                                            className="text-sm font-medium leading-none truncate whitespace-pre-wrap line-clamp-1 break-all peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
                                         >
                                             {node.name}
                                         </label>
@@ -173,7 +173,7 @@ export default function EditMemoryPage() {
                     {family && family.members && family.members.length > 0 && (
                         <div>
                             <Label className="flex items-center gap-2 mb-2">
-                                <Users className="h-4 w-4" />
+                                <Users className="size-5" />
                                 Участники
                             </Label>
                             <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-3">
@@ -192,7 +192,7 @@ export default function EditMemoryPage() {
                                         />
                                         <label
                                             htmlFor={`participant-${member.id}`}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                                            className="text-sm font-medium leading-none truncate whitespace-pre-wrap line-clamp-1 break-all peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1 "
                                         >
                                             {member.first_name || member.username}
                                         </label>

@@ -234,7 +234,7 @@ export default function EditMemoryModal({
                                         />
                                         <label
                                             htmlFor={`edit-node-${node.id}`}
-                                            className="text-sm font-medium leading-none cursor-pointer flex-1"
+                                            className="text-sm font-medium leading-none cursor-pointer truncate whitespace-pre-wrap line-clamp-1 break-all flex-1"
                                         >
                                             {node.name}
                                         </label>
@@ -273,7 +273,7 @@ export default function EditMemoryModal({
                                         />
                                         <label
                                             htmlFor={`edit-participant-${member.id}`}
-                                            className="text-sm font-medium leading-none cursor-pointer flex-1"
+                                            className="text-sm font-medium leading-none truncate whitespace-pre-wrap line-clamp-1 break-all cursor-pointer flex-1"
                                         >
                                             {member.first_name || member.username}
                                         </label>
@@ -337,7 +337,7 @@ export default function EditMemoryModal({
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className='flex flex-col gap-2'>
                         <Button type="button" variant="outline" onClick={onClose}>
                             Отмена
                         </Button>

@@ -19,7 +19,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
     return (
         <>
             <Dialog open={open} onOpenChange={onClose}>
-                <DialogContent className="max-w-lg">
+                <DialogContent className="max-w-lg ">
                     <DialogHeader>
                         <DialogTitle>Информация о человеке</DialogTitle>
                     </DialogHeader>
@@ -37,7 +37,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                                 </div>
                             ) : (
                                 <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-4 border-border shadow-lg flex items-center justify-center">
-                                    <span className="text-4xl font-bold text-muted-foreground">
+                                    <span className="text-4xl font-bold text-muted-foreground truncate whitespace-pre-wrap line-clamp-1 break-all">
                                         {(label || name || '?').charAt(0).toUpperCase()}
                                     </span>
                                 </div>
@@ -45,7 +45,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                         </div>
 
                         <div className="text-center">
-                            <h2 className="text-2xl font-bold text-foreground mb-2">{label || name}</h2>
+                            <h2 className="text-2xl font-bold text-foreground mb-2 truncate whitespace-pre-wrap line-clamp-2 break-all">{label || name}</h2>
                             {(birthDate || deathDate || age_display) && (
                                 <div className="flex items-center justify-center gap-2 text-muted-foreground">
                                     <Calendar className="h-4 w-4" />

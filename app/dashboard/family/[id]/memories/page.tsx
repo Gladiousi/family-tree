@@ -193,15 +193,15 @@ export default function MemoriesPage() {
                                 </p>
                             )}
                             {memory.participants && memory.participants.length > 0 && (
-                                <p className="text-sm text-muted-foreground flex items-center gap-2 mb-2 line-clamp-1">
+                                <p className="text-sm text-muted-foreground flex items-start gap-2 mb-2 line-clamp-1">
                                     <Users className="h-4 w-4 flex-shrink-0" />
-                                    <span className="truncate">{memory.participants.map((p: any) => p.first_name || p.username).join(', ')}</span>
+                                    <span className="truncate whitespace-pre-wrap line-clamp-1 break-all">{memory.participants.map((p: any) => p.first_name || p.username).join(', ')}</span>
                                 </p>
                             )}
                             {memory.nodes && memory.nodes.length > 0 && (
-                                <p className="text-sm text-muted-foreground flex items-center gap-2 mb-3 line-clamp-1">
+                                <p className="text-sm text-muted-foreground flex items-start gap-2 mb-3 line-clamp-3">
                                     <User className="h-4 w-4 flex-shrink-0" />
-                                    <span className="truncate">{memory.nodes.map((n: any) => n.name).join(', ')}</span>
+                                    <span className="truncate whitespace-pre-wrap line-clamp-2 break-all">{memory.nodes.map((n: any) => n.name).join(', ')}</span>
                                 </p>
                             )}
                             {memory.description && (
@@ -209,7 +209,6 @@ export default function MemoriesPage() {
                             )}
                             {memory.media && memory.media.length > 0 && (
                                 <div className="mt-4 grid grid-cols-2 gap-2">
-                                    {/* Первое медиа */}
                                     <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
                                         {memory.media[0].type === 'video' ? (
                                             <div className="relative w-full h-full bg-gray-800">
@@ -228,7 +227,6 @@ export default function MemoriesPage() {
                                         )}
                                     </div>
                                     
-                                    {/* Счетчик остальных медиа */}
                                     {memory.media.length > 1 && (
                                         <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg overflow-hidden flex items-center justify-center border-2 border-primary/30">
                                             <div className="text-center">
@@ -261,11 +259,11 @@ export default function MemoriesPage() {
                     <div className="space-y-4">
                         <div>
                             <Label>Заголовок</Label>
-                            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+                            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder='Введите заголовок'/>
                         </div>
                         <div>
                             <Label>Описание</Label>
-                            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder='Введите описание'/>
                         </div>
                         <div>
                             <Label>Дата</Label>
@@ -295,7 +293,7 @@ export default function MemoriesPage() {
                                             />
                                             <label
                                                 htmlFor={`node-${node.id}`}
-                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                                className="text-sm font-medium w-fit truncate whitespace-pre-wrap line-clamp-1 break-all leading-[130%] peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                             >
                                                 {node.name}
                                             </label>

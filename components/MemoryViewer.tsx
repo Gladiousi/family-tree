@@ -41,14 +41,14 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                         {memory.participants && memory.participants.length > 0 && (
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Users className="h-4 w-4" />
-                                <span>{memory.participants.map((p: any) => p.first_name || p.username).join(', ')}</span>
+                                <span className='truncate whitespace-pre-wrap line-clamp-1 break-all'>{memory.participants.map((p: any) => p.first_name || p.username).join(', ')}</span>
                             </div>
                         )}
 
                         {memory.nodes && memory.nodes.length > 0 && (
                             <div className="flex items-center gap-2 text-muted-foreground">
-                                <User className="h-4 w-4" />
-                                <span>{memory.nodes.map((n: any) => n.name).join(', ')}</span>
+                                <User className="size-5" />
+                                <span className='truncate whitespace-pre-wrap line-clamp-1 break-all'>{memory.nodes.map((n: any) => n.name).join(', ')}</span>
                             </div>
                         )}
 
@@ -119,7 +119,6 @@ export default function MemoryViewer({ open, onClose, memory, onEdit, onDelete, 
                 </DialogContent>
             </Dialog>
 
-            {/* Просмотр медиа */}
             {memory.media && memory.media.length > 0 && (
                 <MediaViewer
                     open={mediaViewerOpen}
