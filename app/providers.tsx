@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useEffect, useState } from 'react';
-import { Toaster } from 'sonner';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from '@/components/ui/sonner';
 import { useAuthStore } from '@/store/useAuthStore';
 import { LoadingSpinner } from '@/components/ui/loading';
 
@@ -28,18 +29,22 @@ export function Providers({ children }: { children: ReactNode }) {
 
     if (!isHydrated || isRestoring) {
         return (
-            <QueryClientProvider client={queryClient}>
-                <div className="flex items-center justify-center min-h-screen bg-background">
-                    <LoadingSpinner size="lg" text="Загрузка..." />
-                </div>
-                <Toaster position="top-right" richColors />
-            </QueryClientProvider>
+            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+                <QueryClientProvider client={queryClient}>
+                    <div className="flex items-center justify-center min-h-screen bg-background">
+                        <LoadingSpinner size="lg" text="Загрузка..." />
+                    </div>
+                    <Toaster position="top-right" richColors />
+                </QueryClientProvider>
+            </ThemeProvider>
         );
     }
 
     return (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        </ThemeProvider>
     );
 }

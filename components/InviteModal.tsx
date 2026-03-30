@@ -12,7 +12,7 @@ export default function InviteModal({ open, onClose, familyId }: InviteModalProp
     const [email, setEmail] = useState('');
 
     const handleInvite = () => {
-        toast.success(`Приглашение отправлено на ${email}`);
+        toast.success(`Приглашение отправлено в семью ${familyId} на ${email}`);
         setEmail('');
         onClose();
     };

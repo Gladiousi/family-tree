@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { NodeData, NodeEditorProps } from '@/types/components';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 const todayString = new Date().toISOString().split('T')[0];
 
@@ -117,7 +118,13 @@ export default function NodeEditor({ open, onClose, node, onSave }: NodeEditorPr
                         <div className="relative">
                             <div className="w-24 h-24 rounded-full bg-gray-200 border-2 border-dashed flex items-center justify-center overflow-hidden">
                                 {photoPreview ? (
-                                    <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                                    <Image
+                                        src={photoPreview}
+                                        alt="Preview"
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
+                                    />
                                 ) : (
                                     <span className="text-gray-400 text-xs">Фото</span>
                                 )}

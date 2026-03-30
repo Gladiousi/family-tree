@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Heart, Home, LayoutDashboard, LogIn, Info, HelpCircle, TreePine } from 'lucide-react';
+import { Heart, Home, Info, HelpCircle, TreePine } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export function Footer() {

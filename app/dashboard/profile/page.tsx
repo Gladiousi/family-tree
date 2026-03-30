@@ -8,11 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Save, User, ArrowLeft, Calendar } from 'lucide-react';
+import { Save, User, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { LoadingPage } from '@/components/ui/loading';
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { sanitizeTextField, isValidEmail, isValidUsername, rateLimiter } from '@/lib/security';
 import type { UserData } from '@/types/models';
@@ -225,7 +224,8 @@ export default function ProfilePage() {
             <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-6">Редактировать профиль</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                         <Label htmlFor="username">Имя пользователя *</Label>
                         <Input
                             id="username"
@@ -237,9 +237,9 @@ export default function ProfilePage() {
                             placeholder="3-30 символов"
                             aria-required="true"
                         />
-                    </div>
+                        </div>
 
-                    <div>
+                        <div>
                         <Label htmlFor="email">Email *</Label>
                         <Input
                             id="email"
@@ -252,21 +252,23 @@ export default function ProfilePage() {
                             placeholder="example@mail.com"
                             aria-required="true"
                         />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <Label htmlFor="firstName">Имя</Label>
+                            <Input
+                                id="firstName"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                maxLength={50}
+                                className="mt-2"
+                                placeholder="Ваше имя"
+                            />
+                        </div>
                     </div>
 
-                    <div>
-                        <Label htmlFor="firstName">Имя</Label>
-                        <Input
-                            id="firstName"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            maxLength={50}
-                            className="mt-2"
-                            placeholder="Ваше имя"
-                        />
-                    </div>
-
-                    <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
                         <Label htmlFor="birthDate">Дата рождения</Label>
                         <Input
                             id="birthDate"
@@ -276,9 +278,9 @@ export default function ProfilePage() {
                             onChange={(e) => setBirthDate(e.target.value)}
                             className="mt-2"
                         />
-                    </div>
+                        </div>
 
-                    <div>
+                        <div>
                         <Label htmlFor="deathDate">Дата смерти</Label>
                         <Input
                             id="deathDate"
@@ -289,6 +291,7 @@ export default function ProfilePage() {
                             min={birthDate || undefined}
                             max={todayString}
                         />
+                        </div>
                     </div>
 
                     {formError && (
@@ -298,7 +301,11 @@ export default function ProfilePage() {
                     )}
 
                     <div className="flex gap-4 justify-end">
-                        <Button type="submit" disabled={updateProfile.isPending}>
+                        <Button
+                            type="submit"
+                            disabled={updateProfile.isPending}
+                            className="w-full sm:w-auto"
+                        >
                             <Save className="mr-2 h-4 w-4" />
                             {updateProfile.isPending ? 'Сохранение...' : 'Сохранить'}
                         </Button>

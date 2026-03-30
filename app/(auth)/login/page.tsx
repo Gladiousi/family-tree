@@ -67,8 +67,8 @@ export default function LoginPage() {
     });
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-            <div className="w-full max-w-md space-y-6 rounded-lg border bg-white p-8 shadow-xl">
+        <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
+            <div className="w-full max-w-md space-y-6 rounded-lg border border-border bg-card p-8 shadow-xl">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold">Вход</h1>
                 </div>

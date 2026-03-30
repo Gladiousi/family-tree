@@ -18,8 +18,7 @@ import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Plus, TreePine, Save, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, TreePine, Save } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useState, useCallback, useEffect } from 'react';
@@ -254,7 +253,6 @@ export default function FamilyTreePage() {
                 return;
             }
 
-            const edgeId = `${params.source}-${params.target}`;
             const existingEdge = edges.find(
                 (e) => e.source === params.source && e.target === params.target
             );
@@ -406,7 +404,7 @@ export default function FamilyTreePage() {
 
     if (nodesLoading || edgesLoading) {
         return (
-            <div className="h-screen flex items-center justify-center bg-gray-50">
+            <div className="h-screen flex items-center justify-center bg-background">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                     <p className="text-muted-foreground">Загрузка дерева...</p>
@@ -417,8 +415,8 @@ export default function FamilyTreePage() {
 
     return (
         <>
-            <div className="h-screen flex flex-col bg-gray-50">
-                <div className="p-3 sm:p-4 md:p-6 border-b flex flex-col gap-3 bg-white z-10 shadow-sm">
+            <div className="h-screen flex flex-col bg-background">
+                <div className="p-3 sm:p-4 md:p-6 border-b flex flex-col gap-3 bg-background/95 z-10 shadow-sm">
                     <Breadcrumbs
                         items={[
                             { label: 'Мои семьи', href: '/dashboard' },
@@ -516,13 +514,13 @@ export default function FamilyTreePage() {
                         edgesFocusable={true}
                         edgesUpdatable={false}
                         fitView
-                        className="bg-gray-50"
+                        className="bg-background"
                     >
                         <Controls className='absolute top-5 h-fit'/>
                         <Background />
                     </ReactFlow>
                     {nodes.length === 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
                             <Card className="text-center p-8 max-w-md shadow-xl">
                                 <TreePine className="h-16 w-16 mx-auto mb-4 text-primary" />
                                 <h3 className="text-xl font-semibold mb-2">Дерево пусто</h3>

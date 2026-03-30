@@ -17,6 +17,7 @@ import {
     TreePine,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function Navbar() {
     const { user, logout } = useAuthStore();
@@ -25,15 +26,15 @@ export function Navbar() {
 
     const userInitials = user
         ? (user.first_name || user.username)
-              .split(' ')
-              .map((n: any) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
+            .split(' ')
+            .map((n: any) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
         : '';
 
     return (
-        <header className="sticky top-0 left-0 right-0 z-50 border-b bg-white/95 backdrop-blur-md shadow-sm">
+        <header className="sticky top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur-md shadow-sm">
             <div className="container mx-auto px-4 py-3">
                 <div className="flex justify-between items-center">
                     <Link
@@ -52,6 +53,7 @@ export function Navbar() {
                     <nav className="hidden md:flex items-center gap-2">
                         {user ? (
                             <>
+                                <ThemeToggle />
                                 <Link
                                     href="/dashboard"
                                     className={cn(
@@ -91,6 +93,7 @@ export function Navbar() {
                             </>
                         ) : (
                             <div className="flex items-center gap-2">
+                                <ThemeToggle />
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -207,6 +210,12 @@ export function Navbar() {
                                         <span>Выйти</span>
                                     </Button>
                                 </div>
+
+                                <div className="pt-3 border-t">
+                                    <div className="px-3 py-2">
+                                        <ThemeToggle />
+                                    </div>
+                                </div>
                             </>
                         ) : (
                             <div className="space-y-2">
@@ -231,6 +240,10 @@ export function Navbar() {
                                         <span>Регистрация</span>
                                     </Link>
                                 </Button>
+
+                                <div className="pt-3 border-t px-3">
+                                    <ThemeToggle />
+                                </div>
                             </div>
                         )}
                     </div>

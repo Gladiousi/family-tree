@@ -26,7 +26,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                     <div className="space-y-4">
                         <div className="flex justify-center">
                             {photoUrl ? (
-                                <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-lg">
+                                <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-border shadow-lg">
                                     <Image 
                                         src={photoUrl} 
                                         alt={label || name || 'Фото'} 
@@ -36,8 +36,8 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                                     />
                                 </div>
                             ) : (
-                                <div className="w-32 h-32 rounded-full bg-linear-to-br from-blue-100 to-purple-100 border-4 border-gray-200 shadow-lg flex items-center justify-center">
-                                    <span className="text-4xl font-bold text-gray-600">
+                                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 border-4 border-border shadow-lg flex items-center justify-center">
+                                    <span className="text-4xl font-bold text-muted-foreground">
                                         {(label || name || '?').charAt(0).toUpperCase()}
                                     </span>
                                 </div>
@@ -45,7 +45,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                         </div>
 
                         <div className="text-center">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">{label || name}</h2>
+                            <h2 className="text-2xl font-bold text-foreground mb-2">{label || name}</h2>
                             {(birthDate || deathDate || age_display) && (
                                 <div className="flex items-center justify-center gap-2 text-muted-foreground">
                                     <Calendar className="h-4 w-4" />
@@ -63,7 +63,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                                 <h3 className="font-semibold mb-2">История</h3>
                                 {node.data?.bio_html ? (
                                     <div 
-                                        className="text-muted-foreground prose prose-sm max-w-none"
+                                        className="text-muted-foreground text-sm leading-relaxed max-w-none"
                                         dangerouslySetInnerHTML={{ __html: node.data.bio_html }}
                                     />
                                 ) : (
@@ -78,7 +78,7 @@ export default function NodeViewer({ open, onClose, node, onEdit, onDelete, isDe
                                     {node.data.media.map((m: any) => (
                                         <div 
                                             key={m.id} 
-                                            className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden cursor-pointer group"
+                                            className="relative aspect-video bg-muted/30 border border-border rounded-lg overflow-hidden cursor-pointer group"
                                             onClick={() => {
                                                 if (m.type === 'photo') {
                                                     const link = document.createElement('a');

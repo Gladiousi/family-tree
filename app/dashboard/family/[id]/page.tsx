@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { IconButton } from '@/components/ui/icon-button';
 import { Card } from '@/components/ui/card';
-import { Users, Edit, TreePine, Heart, ArrowLeft, Trash2, X, Image as ImageIcon, Upload, Play } from 'lucide-react';
+import { Users, Edit, TreePine, Heart, Trash2, X, Image as ImageIcon, Upload, Play } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -150,7 +150,7 @@ export default function FamilyPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
                     <div className="min-w-0 flex-1 flex items-start gap-4">
                         {family.photo_url && (
-                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border-2 border-border flex-shrink-0">
                                 <Image 
                                     src={family.photo_url} 
                                     alt={family.name} 

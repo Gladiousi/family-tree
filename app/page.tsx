@@ -21,7 +21,7 @@ export default function Home() {
 
     if (isRestoring) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-6">
+            <div className="min-h-screen flex items-center justify-center p-6">
                 <LoadingSpinner size="lg" text="Загрузка..." />
             </div>
         );
@@ -71,20 +71,18 @@ export default function Home() {
 
     return (
         <div className="min-h-screen">
-            <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-                <div className="absolute -z-10 inset-0 opacity-[0.02]" style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                }} />
+            <section className="relative overflow-hidden ">
+                <div className="absolute -z-10 inset-0 opacity-[0.02]" />
                 <div className="container mx-auto px-4 sm:px-6 z-50 lg:px-8 py-20 sm:py-24 lg:py-32">
                     <div className="text-center max-w-4xl mx-auto space-y-8">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4  slide-in-from-bottom-4 duration-700">
                             <Sparkles className="h-4 w-4 text-primary" />
                             <span className="text-sm font-medium text-primary">
                                 Сохраняйте историю вашей семьи
                             </span>
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight  slide-in-from-bottom-4 duration-700 delay-100">
                             <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                                 Семейное Древо
                             </span>
@@ -94,12 +92,12 @@ export default function Home() {
                             </span>
                         </h1>
 
-                        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto  slide-in-from-bottom-4 duration-700 delay-200">
                             Сохраняйте истории, фото и связи поколений. Создавайте
                             генеалогические деревья и делитесь воспоминаниями с близкими.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4  slide-in-from-bottom-4 duration-700 delay-300">
                             {user ? (
                                 <Button
                                     asChild

@@ -4,7 +4,7 @@ import './globals.css';
 import { Providers } from './providers';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,7 +19,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
+    <html
+      lang="ru"
+      suppressHydrationWarning
+      className="dark"
+      style={{ colorScheme: 'dark' }}
+    >
       <body className={inter.className}>
         <Providers>
           <a
